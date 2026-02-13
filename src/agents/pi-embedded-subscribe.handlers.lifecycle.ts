@@ -50,6 +50,37 @@ export function handleAutoCompactionStart(ctx: EmbeddedPiSubscribeContext) {
         ctx.log.warn(`compaction fact extraction failed: ${String(err)}`);
       }
     })();
+
+    // Capture tool outputs to scratch pad before compaction destroys them.
+    // Written to memory/scratch/ as markdown — auto-indexed by file watcher.
+    // Auto-recall surfaces them when the agent needs past tool results.
+    void (async () => {
+      try {
+        const { captureToScratch } = await import("../../memory/scratch-pad.js");
+        for (const msg of messages) {
+          const m = msg as Record<string, unknown>;
+          // Capture tool results (not errors — failure store handles those)
+          if (m?.role === "toolResult" && !m?.isError) {
+            const toolName = typeof m.toolName === "string" ? m.toolName : "";
+            const text = typeof m.text === "string" ? m.text :
+              typeof m.output === "string" ? m.output :
+              typeof m.content === "string" ? m.content : "";
+            if (toolName && text) {
+              await captureToScratch({
+                sessionKey: ctx.params.runId,
+                toolName,
+                meta: typeof m.meta === "string" ? m.meta : undefined,
+                resultText: text,
+                isError: false,
+                workspaceDir: process.cwd(),
+              });
+            }
+          }
+        }
+      } catch (err) {
+        ctx.log.warn(`scratch pad capture failed: ${String(err)}`);
+      }
+    })();
   }
 
   // Run before_compaction plugin hook (fire-and-forget)

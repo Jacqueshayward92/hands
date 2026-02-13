@@ -1266,6 +1266,14 @@ export async function runEmbeddedAttempt(
         unsubscribe();
         clearActiveEmbeddedRun(params.sessionId, queueHandle);
         params.abortSignal?.removeEventListener?.("abort", onAbort);
+
+        // Clean up scratch pad after run completes
+        void (async () => {
+          try {
+            const { clearScratch } = await import("../../../memory/scratch-pad.js");
+            await clearScratch(params.runId);
+          } catch { /* ignore */ }
+        })();
       }
 
       const lastAssistant = messagesSnapshot
