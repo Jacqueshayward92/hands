@@ -1,9 +1,9 @@
 export type CorrectionSignal = {
   detected: boolean;
-  confidence: number;
-  userMessage: string;
-  agentMessage?: string;
-  category?: string;
+  confidence: number;       // 0-1
+  userMessage: string;      // the correction
+  agentMessage?: string;    // what the agent said that was wrong
+  category?: string;        // 'factual' | 'behavioral' | 'preference' | 'procedural'
 };
 
 export function detectCorrection(params: {
@@ -11,38 +11,23 @@ export function detectCorrection(params: {
   previousAgentMessage?: string;
   previousUserMessage?: string;
 }): CorrectionSignal {
-  const { userMessage, previousAgentMessage } = params;
-  const text = (userMessage || "").toLowerCase();
-  const clusters: string[] = [];
-  // pattern sets
-  const explicitNegation = /(\bno\b|\bwrong\b|it's not right|that\s+isn't\s+right|incorrect|don't\s+do\s+that|stop\s+doing\s+this)/i;
-  const correctionPats = /(\bactually\b|\bi\s+meant\b|\bnot\s+[^,]+,\s*[^,]+|\buse\s+[^\s]+\s+instead\b|\bthe\s+correct\s+way\b)/i;
-  const preference = /(\bi\s+prefer\b|\balways\s+do\b|\bnever\s+do\b|\bdon't\s+use\b|\bfrom\s+now\s+on\b)/i;
-  const behavioral = /(\bdon't\s+ask\b|\bstop\s+asking\s+permission\b|\bjust\s+do\s+it\b|\bbe\s+more\b|\bbe\s+less\b)/i;
-  const frustration = /(\bi\s+already\s+told\s+you\b|\bagain\?\b|how\s+many\s+times\b)/i;
-
+  // Very lightweight heuristic-based detector (MVP):
+  const up = (s: string) => s?.toLowerCase?.() ?? "";
+  const m = up(params.userMessage || "");
+  const negs = ["no", "not", "wrong", "incorrect", "don’t", "don't", "stop"]; // basic negations
+  const detected = negs.some(n => m.includes(n));
+  const confidence = detected ? 0.6 : 0.2;
+  // crude category guess
   let category: string | undefined;
-  let signals = 0;
-  if (explicitNegation.test(text)) { signals++; category = category ?? 'procedural'; }
-  if (correctionPats.test(text)) { signals++; category = category ?? 'factual'; }
-  if (preference.test(text)) { signals++; category = category ?? 'preference'; }
-  if (behavioral.test(text)) { signals++; category = category ?? 'behavioral'; }
-  if (frustration.test(text)) { signals++; category = category ?? 'procedural'; }
-
-  const detected = signals > 0;
-  // rough confidence: more signals -> higher
-  let confidence = 0;
-  if (signals > 1) confidence = Math.min(0.95, 0.5 + signals * 0.15);
-  else if (signals === 1) confidence = 0.6;
-  else confidence = 0.0;
-  // clamp
-  if (confidence < 0) confidence = 0; if (confidence > 1) confidence = 1;
-
+  if (m.includes("ip") || m.includes("data")) category = "factual";
+  else if (m.includes("never") || m.includes("always")) category = "behavioral";
+  else if (m.includes("prefer") || m.includes("should")) category = "preference";
+  else category = "procedural";
   return {
     detected,
-    confidence,
-    userMessage,
-    agentMessage: previousAgentMessage,
+    confidence: Math.max(0, Math.min(1, confidence)),
+    userMessage: params.userMessage,
+    agentMessage: params?.previousAgentMessage,
     category,
   };
 }

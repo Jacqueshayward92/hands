@@ -24,6 +24,7 @@ import { createAnthropicPayloadLogger } from "../../anthropic-payload-log.js";
 import { makeBootstrapWarn, resolveBootstrapContextForRun } from "../../bootstrap-files.js";
 import { resolveMemorySearchConfig } from "../../memory-search.js";
 import { getMemorySearchManager } from "../../../memory/index.js";
+import { searchCorrections } from "../../../memory/correction-store.js";
 import { createCacheTrace } from "../../cache-trace.js";
 import {
   listChannelSupportedActions,
@@ -285,6 +286,66 @@ export async function runEmbeddedAttempt(
             log.warn(`auto-recall failed: ${err instanceof Error ? err.message : String(err)}`);
           }
         }
+      }
+    }
+
+    // =========================================================================
+    // Correction Recall: inject learned corrections BEFORE regular memories
+    // Corrections are high-priority — the user explicitly corrected the agent.
+    // =========================================================================
+    const correctionsEnabled =
+      !isHeartbeat &&
+      params.config?.agents?.defaults?.memorySearch?.corrections?.enabled !== false;
+    if (correctionsEnabled && params.prompt) {
+      try {
+        const recallAgentId = resolveSessionAgentId({
+          sessionKey: params.sessionKey,
+          config: params.config,
+        });
+        // Extract key terms from the prompt for keyword matching
+        const terms = [
+          ...new Set(
+            params.prompt
+              .split(/\s+/)
+              .map((w) => w.toLowerCase().replace(/[^a-z0-9]/g, ""))
+              .filter((w) => w.length > 3),
+          ),
+        ];
+        const corrections = await searchCorrections(recallAgentId, terms);
+        if (corrections.length > 0) {
+          const correctionLines = corrections
+            .map(
+              (c) =>
+                `⚠️ [${c.category}] ${c.rule}\n   Context: ${c.context.slice(0, 100)}`,
+            )
+            .join("\n\n");
+          // Insert BEFORE auto-recalled memories (higher priority)
+          // Find the index of AUTO_RECALLED_MEMORIES and splice before it;
+          // if not found, unshift to the front.
+          const autoRecallIdx = contextFiles.findIndex(
+            (f) => f.path === "AUTO_RECALLED_MEMORIES",
+          );
+          const correctionFile = {
+            path: "CORRECTIONS",
+            content:
+              `## ⚠️ Learned Corrections (DO NOT repeat these mistakes)\n` +
+              `These are things the user has previously corrected. Follow these rules strictly.\n\n` +
+              correctionLines,
+          };
+          if (autoRecallIdx >= 0) {
+            contextFiles.splice(autoRecallIdx, 0, correctionFile);
+          } else {
+            contextFiles.unshift(correctionFile);
+          }
+          log.debug("correction-recall: injected corrections", {
+            count: corrections.length,
+          });
+        }
+      } catch (err) {
+        // Best-effort: don't block the run if correction recall fails
+        log.warn(
+          `correction-recall failed: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 
