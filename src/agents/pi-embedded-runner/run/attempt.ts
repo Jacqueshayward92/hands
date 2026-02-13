@@ -232,51 +232,58 @@ export async function runEmbeddedAttempt(
     // =========================================================================
     const autoRecallEnabled = !isHeartbeat && params.config?.agents?.defaults?.memorySearch?.autoRecall !== false;
     if (autoRecallEnabled && params.prompt) {
-      const recallAgentId = resolveSessionAgentId({
-        sessionKey: params.sessionKey,
-        config: params.config,
+      const recallDepth = classifyRecallDepth(params.prompt);
+      const recallParams = RECALL_PARAMS[recallDepth];
+      log.debug("auto-recall: classified message", {
+        depth: recallDepth,
+        wordCount: params.prompt.trim().split(/\s+/).length,
+        maxResults: recallParams.maxResults,
       });
-      const memSearchCfg = resolveMemorySearchConfig(params.config, recallAgentId);
-      if (memSearchCfg) {
-        try {
-          const { manager } = await getMemorySearchManager({
-            cfg: params.config!,
-            agentId: recallAgentId,
-          });
-          if (manager) {
-            const autoRecallMaxResults = 5;
-            const autoRecallMinScore = 0.3;
-            const memories = await manager.search(params.prompt, {
-              maxResults: autoRecallMaxResults,
-              minScore: autoRecallMinScore,
-              sessionKey: params.sessionKey,
+
+      if (recallDepth !== 'none') {
+        const recallAgentId = resolveSessionAgentId({
+          sessionKey: params.sessionKey,
+          config: params.config,
+        });
+        const memSearchCfg = resolveMemorySearchConfig(params.config, recallAgentId);
+        if (memSearchCfg) {
+          try {
+            const { manager } = await getMemorySearchManager({
+              cfg: params.config!,
+              agentId: recallAgentId,
             });
-            if (memories.length > 0) {
-              const snippets = memories
-                .map((m) => `[${m.path}#${m.startLine}] (score: ${m.score.toFixed(2)})\n${m.snippet}`)
-                .join("\n\n---\n\n");
-              const maxChars = 4000;
-              const truncatedSnippets = snippets.length > maxChars
-                ? snippets.slice(0, maxChars) + "\n...(truncated)"
-                : snippets;
-              contextFiles.push({
-                path: "AUTO_RECALLED_MEMORIES",
-                content:
-                  `## Recalled Memories (auto-retrieved, relevance-ranked)\n` +
-                  `The following memories were automatically retrieved based on the incoming message. ` +
-                  `You do NOT need to call memory_search for this context — it is already here.\n\n` +
-                  truncatedSnippets,
+            if (manager) {
+              const memories = await manager.search(params.prompt, {
+                maxResults: recallParams.maxResults,
+                minScore: recallParams.minScore,
+                sessionKey: params.sessionKey,
               });
-              log.debug("auto-recall: injected memories", {
-                count: memories.length,
-                topScore: memories[0]?.score,
-                chars: truncatedSnippets.length,
-              });
+              if (memories.length > 0) {
+                const snippets = memories
+                  .map((m) => `[${m.path}#${m.startLine}] (score: ${m.score.toFixed(2)})\n${m.snippet}`)
+                  .join("\n\n---\n\n");
+                const truncatedSnippets = snippets.length > recallParams.maxChars
+                  ? snippets.slice(0, recallParams.maxChars) + "\n...(truncated)"
+                  : snippets;
+                contextFiles.push({
+                  path: "AUTO_RECALLED_MEMORIES",
+                  content:
+                    `## Recalled Memories (auto-retrieved, relevance-ranked)\n` +
+                    `The following memories were automatically retrieved based on the incoming message. ` +
+                    `You do NOT need to call memory_search for this context — it is already here.\n\n` +
+                    truncatedSnippets,
+                });
+                log.debug("auto-recall: injected memories", {
+                  count: memories.length,
+                  topScore: memories[0]?.score,
+                  chars: truncatedSnippets.length,
+                });
+              }
             }
+          } catch (err) {
+            // Auto-recall is best-effort; don't block the run if it fails
+            log.warn(`auto-recall failed: ${err instanceof Error ? err.message : String(err)}`);
           }
-        } catch (err) {
-          // Auto-recall is best-effort; don't block the run if it fails
-          log.warn(`auto-recall failed: ${err instanceof Error ? err.message : String(err)}`);
         }
       }
     }
