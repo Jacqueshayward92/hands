@@ -7,13 +7,18 @@ import { type MessagingToolSend } from "./pi-embedded-messaging.js";
 const TOOL_RESULT_MAX_CHARS = 8000;
 const TOOL_ERROR_MAX_CHARS = 400;
 
-/** Current tool name for compression context (set by handleToolExecutionEnd) */
-let _currentToolName = "";
-export function setCurrentToolName(name: string) { _currentToolName = name; }
+/**
+ * Per-thread tool name for compression context.
+ * Uses a simple stack instead of a global mutable to avoid concurrent session issues.
+ */
+const _toolNameStack: string[] = [];
+export function pushCurrentToolName(name: string) { _toolNameStack.push(name); }
+export function popCurrentToolName() { _toolNameStack.pop(); }
+function currentToolName(): string { return _toolNameStack[_toolNameStack.length - 1] ?? ""; }
 
 function truncateToolText(text: string): string {
   // Apply smart compression first, then truncate as fallback
-  const compressed = compressToolResult(_currentToolName, text);
+  const compressed = compressToolResult(currentToolName(), text);
   if (compressed.length <= TOOL_RESULT_MAX_CHARS) {
     return compressed;
   }
