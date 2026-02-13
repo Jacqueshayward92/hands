@@ -15,6 +15,8 @@ export type SearchRowResult = {
   score: number;
   snippet: string;
   source: SearchSource;
+  /** Unix timestamp (ms) when this chunk was last indexed */
+  updatedAt?: number;
 };
 
 export async function searchVector(params: {
@@ -35,7 +37,7 @@ export async function searchVector(params: {
     const rows = params.db
       .prepare(
         `SELECT c.id, c.path, c.start_line, c.end_line, c.text,\n` +
-          `       c.source,\n` +
+          `       c.source, c.updated_at,\n` +
           `       vec_distance_cosine(v.embedding, ?) AS dist\n` +
           `  FROM ${params.vectorTable} v\n` +
           `  JOIN chunks c ON c.id = v.id\n` +
@@ -55,6 +57,7 @@ export async function searchVector(params: {
       end_line: number;
       text: string;
       source: SearchSource;
+      updated_at: number;
       dist: number;
     }>;
     return rows.map((row) => ({
@@ -65,6 +68,7 @@ export async function searchVector(params: {
       score: 1 - row.dist,
       snippet: truncateUtf16Safe(row.text, params.snippetMaxChars),
       source: row.source,
+      updatedAt: row.updated_at,
     }));
   }
 
@@ -90,6 +94,7 @@ export async function searchVector(params: {
       score: entry.score,
       snippet: truncateUtf16Safe(entry.chunk.text, params.snippetMaxChars),
       source: entry.chunk.source,
+      updatedAt: entry.chunk.updatedAt,
     }));
 }
 
@@ -105,10 +110,11 @@ export function listChunks(params: {
   text: string;
   embedding: number[];
   source: SearchSource;
+  updatedAt?: number;
 }> {
   const rows = params.db
     .prepare(
-      `SELECT id, path, start_line, end_line, text, embedding, source\n` +
+      `SELECT id, path, start_line, end_line, text, embedding, source, updated_at\n` +
         `  FROM chunks\n` +
         ` WHERE model = ?${params.sourceFilter.sql}`,
     )
@@ -120,6 +126,7 @@ export function listChunks(params: {
     text: string;
     embedding: string;
     source: SearchSource;
+    updated_at: number;
   }>;
 
   return rows.map((row) => ({
@@ -130,6 +137,7 @@ export function listChunks(params: {
     text: row.text,
     embedding: parseEmbedding(row.embedding),
     source: row.source,
+    updatedAt: row.updated_at,
   }));
 }
 

@@ -23,7 +23,7 @@ import {
   type OpenAiEmbeddingClient,
   type VoyageEmbeddingClient,
 } from "./embeddings.js";
-import { bm25RankToScore, buildFtsQuery, mergeHybridResults } from "./hybrid.js";
+import { bm25RankToScore, buildFtsQuery, computeRecencyBoost, DEFAULT_RECENCY_WEIGHT, mergeHybridResults } from "./hybrid.js";
 import { isMemoryPath, normalizeExtraMemoryPaths } from "./internal.js";
 import { memoryManagerEmbeddingOps } from "./manager-embedding-ops.js";
 import { searchKeyword, searchVector } from "./manager-search.js";
@@ -232,7 +232,17 @@ export class MemoryIndexManager implements MemorySearchManager {
       : [];
 
     if (!hybrid.enabled) {
-      return vectorResults.filter((entry) => entry.score >= minScore).slice(0, maxResults);
+      // Apply recency weighting even in non-hybrid mode
+      const now = Date.now();
+      const rw = DEFAULT_RECENCY_WEIGHT;
+      const boosted = vectorResults.map((entry) => {
+        const recency = computeRecencyBoost(entry.updatedAt, now);
+        return { ...entry, score: entry.score * (1 - rw) + recency * rw };
+      });
+      return boosted
+        .toSorted((a, b) => b.score - a.score)
+        .filter((entry) => entry.score >= minScore)
+        .slice(0, maxResults);
     }
 
     const merged = this.mergeHybridResults({
@@ -248,7 +258,7 @@ export class MemoryIndexManager implements MemorySearchManager {
   private async searchVector(
     queryVec: number[],
     limit: number,
-  ): Promise<Array<MemorySearchResult & { id: string }>> {
+  ): Promise<Array<MemorySearchResult & { id: string; updatedAt?: number }>> {
     const results = await searchVector({
       db: this.db,
       vectorTable: VECTOR_TABLE,
@@ -260,7 +270,7 @@ export class MemoryIndexManager implements MemorySearchManager {
       sourceFilterVec: this.buildSourceFilter("c"),
       sourceFilterChunks: this.buildSourceFilter(),
     });
-    return results.map((entry) => entry as MemorySearchResult & { id: string });
+    return results.map((entry) => entry as MemorySearchResult & { id: string; updatedAt?: number });
   }
 
   private buildFtsQuery(raw: string): string | null {
@@ -290,7 +300,7 @@ export class MemoryIndexManager implements MemorySearchManager {
   }
 
   private mergeHybridResults(params: {
-    vector: Array<MemorySearchResult & { id: string }>;
+    vector: Array<MemorySearchResult & { id: string; updatedAt?: number }>;
     keyword: Array<MemorySearchResult & { id: string; textScore: number }>;
     vectorWeight: number;
     textWeight: number;
@@ -304,6 +314,7 @@ export class MemoryIndexManager implements MemorySearchManager {
         source: r.source,
         snippet: r.snippet,
         vectorScore: r.score,
+        updatedAt: r.updatedAt,
       })),
       keyword: params.keyword.map((r) => ({
         id: r.id,
