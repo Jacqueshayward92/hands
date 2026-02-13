@@ -93,6 +93,7 @@ import { splitSdkTools } from "../tool-split.js";
 import { describeUnknownError, mapThinkingLevel } from "../utils.js";
 import { flushPendingToolResultsAfterIdle } from "../wait-for-idle-before-flush.js";
 import { detectAndLoadPromptImages } from "./images.js";
+import { classifyRecallDepth, RECALL_PARAMS } from "./recall-classifier.js";
 
 export function injectHistoryImagesIntoMessages(
   messages: AgentMessage[],
@@ -458,6 +459,7 @@ export async function runEmbeddedAttempt(
       userTimeFormat,
       contextFiles,
       memoryCitationsMode: params.config?.memory?.citations,
+      autoRecallEnabled,
     });
     const systemPromptReport = buildSystemPromptReport({
       source: "run",

@@ -41,6 +41,7 @@ function buildMemorySection(params: {
   isMinimal: boolean;
   availableTools: Set<string>;
   citationsMode?: MemoryCitationsMode;
+  autoRecallEnabled?: boolean;
 }) {
   if (params.isMinimal) {
     return [];
@@ -48,6 +49,17 @@ function buildMemorySection(params: {
   if (!params.availableTools.has("memory_search") && !params.availableTools.has("memory_get")) {
     return [];
   }
+
+  if (params.autoRecallEnabled) {
+    return [
+      "## Memory",
+      "Relevant memories have been automatically retrieved and injected into your context below (see 'Recalled Memories' in Project Context).",
+      "You do NOT need to call memory_search unless you need additional detail beyond what was auto-retrieved.",
+      "memory_get is still available to read specific files when needed.",
+      "",
+    ];
+  }
+
   const lines = [
     "## Memory Recall",
     "Before answering anything about prior work, decisions, dates, people, preferences, or todos: run memory_search on MEMORY.md + memory/*.md; then use memory_get to pull only the needed lines. If low confidence after search, say you checked.",
@@ -215,6 +227,7 @@ export function buildAgentSystemPrompt(params: {
     channel: string;
   };
   memoryCitationsMode?: MemoryCitationsMode;
+  autoRecallEnabled?: boolean;
 }) {
   const coreToolSummaries: Record<string, string> = {
     read: "Read file contents",
@@ -364,6 +377,7 @@ export function buildAgentSystemPrompt(params: {
     isMinimal,
     availableTools,
     citationsMode: params.memoryCitationsMode,
+    autoRecallEnabled: params.autoRecallEnabled,
   });
   const docsSection = buildDocsSection({
     docsPath: params.docsPath,
