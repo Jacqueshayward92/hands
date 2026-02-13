@@ -236,6 +236,28 @@ export async function runEmbeddedAttempt(
     }
 
     // =========================================================================
+    // Context Classification: determine what context this message needs
+    // Fast heuristic — skips unnecessary injections for simple messages
+    // =========================================================================
+    let contextExclusions = new Set<string>();
+    if (!isHeartbeat && params.prompt) {
+      try {
+        const { classifyMessage, resolveContextExclusions } = await import("../../context-classifier.js");
+        const classification = classifyMessage(params.prompt);
+        contextExclusions = resolveContextExclusions(classification);
+        if (classification.minimalContext) {
+          log.debug("context-classifier: minimal context mode", {
+            tags: [...classification.tags],
+            chatProbability: classification.chatProbability,
+            exclusions: [...contextExclusions],
+          });
+        }
+      } catch {
+        // Best-effort — classification failure means include everything
+      }
+    }
+
+    // =========================================================================
     // Auto-Recall: Pre-inject relevant memories into context
     // Instead of the LLM calling memory_search reactively, the platform
     // retrieves relevant memories BEFORE the LLM sees the message.
@@ -385,7 +407,7 @@ export async function runEmbeddedAttempt(
     // Task Ledger injection: auto-inject active tasks into context
     // The agent always knows what it's working on, what's blocked, what's next.
     // =========================================================================
-    if (!isHeartbeat) {
+    if (!isHeartbeat && !contextExclusions.has("TASK_LEDGER")) {
       const taskAgentId = resolveSessionAgentId({
         sessionKey: params.sessionKey,
         config: params.config,
@@ -408,7 +430,7 @@ export async function runEmbeddedAttempt(
     // Tool Failure injection: auto-inject known tool issues into context
     // Agent learns from past tool errors without repeating them.
     // =========================================================================
-    if (!isHeartbeat) {
+    if (!isHeartbeat && !contextExclusions.has("TOOL_FAILURES")) {
       const failureAgentId = resolveSessionAgentId({
         sessionKey: params.sessionKey,
         config: params.config,
@@ -431,7 +453,7 @@ export async function runEmbeddedAttempt(
     // Proactive Triggers: detect conditions that need agent attention
     // Runs on every wake (heartbeat + regular) but with cooldown per trigger
     // =========================================================================
-    {
+    if (!contextExclusions.has("PROACTIVE_ALERTS")) {
       const triggerAgentId = resolveSessionAgentId({
         sessionKey: params.sessionKey,
         config: params.config,
@@ -468,7 +490,7 @@ export async function runEmbeddedAttempt(
     // Sub-agent status injection: main agent sees parallel work
     // Shows running + recently completed sub-agent tasks
     // =========================================================================
-    if (!isHeartbeat) {
+    if (!isHeartbeat && !contextExclusions.has("SUBAGENT_STATUS")) {
       try {
         const { listSubagentRunsForRequester } = await import("../../subagent-registry.js");
         const { buildSubagentStatusContext } = await import("../../subagent-context.js");
