@@ -265,7 +265,9 @@ export async function runEmbeddedAttempt(
     // =========================================================================
     const autoRecallEnabled = !isHeartbeat && params.config?.agents?.defaults?.memorySearch?.autoRecall !== false;
     if (autoRecallEnabled && params.prompt) {
-      const recallDepth = classifyRecallDepth(params.prompt);
+      // If context classifier determined minimal context, skip recall entirely
+      const classifierOverride = contextExclusions.size > 2; // Chat messages exclude 4+ blocks
+      const recallDepth = classifierOverride ? "none" as const : classifyRecallDepth(params.prompt);
       const recallParams = RECALL_PARAMS[recallDepth];
       log.debug("auto-recall: classified message", {
         depth: recallDepth,
