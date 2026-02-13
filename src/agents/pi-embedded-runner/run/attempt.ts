@@ -1094,6 +1094,27 @@ export async function runEmbeddedAttempt(
               log.warn(`agent_end hook failed: ${err}`);
             });
         }
+
+        // =====================================================================
+        // Episode Logger: persist structured work history after each run
+        // Fire-and-forget — records what was done for future recall
+        // =====================================================================
+        void (async () => {
+          try {
+            const { logEpisode } = await import("../../../memory/episode-logger.js");
+            await logEpisode({
+              messages: messagesSnapshot,
+              success: !aborted && !promptError,
+              error: promptError ? describeUnknownError(promptError) : undefined,
+              durationMs: Date.now() - promptStartedAt,
+              workspaceDir: effectiveWorkspace,
+              sessionKey: params.sessionKey,
+              agentId: hookAgentId,
+            });
+          } catch (err) {
+            log.warn(`episode logging failed: ${err instanceof Error ? err.message : String(err)}`);
+          }
+        })();
       } finally {
         clearTimeout(abortTimer);
         if (abortWarnTimer) {
