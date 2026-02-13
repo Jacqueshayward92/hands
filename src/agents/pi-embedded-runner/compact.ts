@@ -444,6 +444,22 @@ export async function compactEmbeddedPiSessionDirect(
         if (limited.length > 0) {
           session.agent.replaceMessages(limited);
         }
+
+        // =====================================================================
+        // Fact Extraction: preserve knowledge before compaction destroys messages
+        // =====================================================================
+        try {
+          const { extractAndPersistCompactionFacts } = await import("../../memory/compaction-facts.js");
+          await extractAndPersistCompactionFacts({
+            messages: session.messages,
+            workspaceDir: effectiveWorkspace,
+            sessionKey: params.sessionKey,
+          });
+        } catch (factErr) {
+          // Best-effort: never block compaction
+          log.warn(`compaction fact extraction failed: ${factErr instanceof Error ? factErr.message : String(factErr)}`);
+        }
+
         const result = await session.compact(params.customInstructions);
         // Estimate tokens after compaction by summing token estimates for remaining messages
         let tokensAfter: number | undefined;

@@ -35,6 +35,23 @@ export function handleAutoCompactionStart(ctx: EmbeddedPiSubscribeContext) {
     data: { phase: "start" },
   });
 
+  // Extract facts from messages before they are destroyed by compaction.
+  // This is fire-and-forget — must not block compaction.
+  const messages = ctx.params.session.messages;
+  if (messages && messages.length > 0) {
+    void (async () => {
+      try {
+        const { extractAndPersistCompactionFacts } = await import("../../memory/compaction-facts.js");
+        await extractAndPersistCompactionFacts({
+          messages,
+          workspaceDir: process.cwd(),
+        });
+      } catch (err) {
+        ctx.log.warn(`compaction fact extraction failed: ${String(err)}`);
+      }
+    })();
+  }
+
   // Run before_compaction plugin hook (fire-and-forget)
   const hookRunner = getGlobalHookRunner();
   if (hookRunner?.hasHooks("before_compaction")) {
