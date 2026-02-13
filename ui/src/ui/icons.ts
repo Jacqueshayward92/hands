@@ -228,6 +228,11 @@ export const icons = {
       />
     </svg>
   `,
+  pulse: html`
+    <svg viewBox="0 0 24 24">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    </svg>
+  `,
 } as const;
 
 export type IconName = keyof typeof icons;

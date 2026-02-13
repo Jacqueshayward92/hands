@@ -4,7 +4,7 @@ export const TAB_GROUPS = [
   { label: "Chat", tabs: ["chat"] },
   {
     label: "Control",
-    tabs: ["overview", "channels", "instances", "sessions", "usage", "cron"],
+    tabs: ["overview", "activity", "channels", "instances", "sessions", "usage", "cron"],
   },
   { label: "Agent", tabs: ["agents", "skills", "nodes"] },
   { label: "Settings", tabs: ["config", "debug", "logs"] },
@@ -13,6 +13,7 @@ export const TAB_GROUPS = [
 export type Tab =
   | "agents"
   | "overview"
+  | "activity"
   | "channels"
   | "instances"
   | "sessions"
@@ -28,6 +29,7 @@ export type Tab =
 const TAB_PATHS: Record<Tab, string> = {
   agents: "/agents",
   overview: "/overview",
+  activity: "/activity",
   channels: "/channels",
   instances: "/instances",
   sessions: "/sessions",
@@ -130,6 +132,8 @@ export function iconForTab(tab: Tab): IconName {
       return "messageSquare";
     case "overview":
       return "barChart";
+    case "activity":
+      return "pulse";
     case "channels":
       return "link";
     case "instances":
@@ -161,6 +165,8 @@ export function titleForTab(tab: Tab) {
       return "Agents";
     case "overview":
       return "Overview";
+    case "activity":
+      return "Activity";
     case "channels":
       return "Channels";
     case "instances":
@@ -194,6 +200,8 @@ export function subtitleForTab(tab: Tab) {
       return "Manage agent workspaces, tools, and identities.";
     case "overview":
       return "Gateway status, entry points, and a fast health read.";
+    case "activity":
+      return "Real-time agent, cron, and heartbeat activity.";
     case "channels":
       return "Manage channels and settings.";
     case "instances":

@@ -303,6 +303,28 @@ export class OpenClawApp extends LitElement {
   @state() debugHealth: HealthSnapshot | null = null;
   @state() debugModels: unknown[] = [];
   @state() debugHeartbeat: unknown = null;
+
+  // Activity dashboard state
+  @state() activityLoading = false;
+  @state() activityEntries: import("./views/activity.js").ActivityEntry[] = [];
+  @state() activityAgentStatus: {
+    main: "idle" | "thinking" | "tool" | "error";
+    workers: { idle: number; active: number; total: number };
+  } | null = null;
+  @state() activityCronStatus: {
+    lastRun: number | null;
+    nextRun: number | null;
+    running: number;
+  } | null = null;
+  @state() activityHeartbeatStatus: {
+    lastCheck: number | null;
+    results: string[];
+  } | null = null;
+  @state() activityResources: {
+    tokenRate?: number;
+    queueSize?: number;
+  } | null = null;
+  @state() activityError: string | null = null;
   @state() debugCallMethod = "";
   @state() debugCallParams = "{}";
   @state() debugCallResult: string | null = null;
