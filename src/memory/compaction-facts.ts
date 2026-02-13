@@ -174,8 +174,8 @@ function extractUrls(
   while ((match = URL_PATTERN.exec(text)) !== null) {
     const url = match[0];
     // Skip common noise URLs
-    if (url.includes("github.com/openclaw/openclaw/issues/")) continue;
-    if (url.includes("docs.openclaw.ai")) continue;
+    if (url.includes("github.com/hands/hands/issues/")) continue;
+    if (url.includes("docs.hands.ai")) continue;
     const key = url.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);

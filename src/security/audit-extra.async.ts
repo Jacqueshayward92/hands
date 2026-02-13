@@ -7,7 +7,7 @@ import JSON5 from "json5";
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { SandboxToolPolicy } from "../agents/sandbox/types.js";
-import type { OpenClawConfig, ConfigFileSnapshot } from "../config/config.js";
+import type { HandsConfig, ConfigFileSnapshot } from "../config/config.js";
 import type { AgentToolsConfig } from "../config/types.tools.js";
 import type { SkillScanFinding } from "./skill-scanner.js";
 import type { ExecFn } from "./windows-acl.js";
@@ -178,7 +178,7 @@ async function readPluginManifestExtensions(pluginPath: string): Promise<string[
   return extensions.map((entry) => (typeof entry === "string" ? entry.trim() : "")).filter(Boolean);
 }
 
-function listWorkspaceDirs(cfg: OpenClawConfig): string[] {
+function listWorkspaceDirs(cfg: HandsConfig): string[] {
   const dirs = new Set<string>();
   const list = cfg.agents?.list;
   if (Array.isArray(list)) {
@@ -237,7 +237,7 @@ function pickToolPolicy(config?: {
 }
 
 function resolveToolPolicies(params: {
-  cfg: OpenClawConfig;
+  cfg: HandsConfig;
   agentTools?: AgentToolsConfig;
   sandboxMode?: "off" | "non-main" | "all";
   agentId?: string | null;
@@ -260,7 +260,7 @@ function normalizePluginIdSet(entries: string[]): Set<string> {
 }
 
 function resolveEnabledExtensionPluginIds(params: {
-  cfg: OpenClawConfig;
+  cfg: HandsConfig;
   pluginDirs: string[];
 }): string[] {
   const normalized = normalizePluginsConfig(params.cfg.plugins);
@@ -340,7 +340,7 @@ function hasProviderPluginAllow(params: {
 // --------------------------------------------------------------------------
 
 export async function collectPluginsTrustFindings(params: {
-  cfg: OpenClawConfig;
+  cfg: HandsConfig;
   stateDir: string;
 }): Promise<SecurityAuditFinding[]> {
   const findings: SecurityAuditFinding[] = [];
@@ -469,7 +469,7 @@ export async function collectPluginsTrustFindings(params: {
         sandboxMode,
         agentId: context.agentId,
       });
-      const broadPolicy = isToolAllowedByPolicies("__openclaw_plugin_probe__", policies);
+      const broadPolicy = isToolAllowedByPolicies("__hands_plugin_probe__", policies);
       const explicitPluginAllow =
         !restrictiveProfile &&
         (hasExplicitPluginAllow({
@@ -590,7 +590,7 @@ export async function collectIncludeFilePermFindings(params: {
 }
 
 export async function collectStateDeepFilesystemFindings(params: {
-  cfg: OpenClawConfig;
+  cfg: HandsConfig;
   env: NodeJS.ProcessEnv;
   stateDir: string;
   platform?: NodeJS.Platform;
@@ -772,7 +772,7 @@ export async function collectPluginsCodeSafetyFindings(params: {
       title: "Plugin extensions directory scan failed",
       detail: `Static code scan could not list extensions directory: ${String(err)}`,
       remediation:
-        "Check file permissions and plugin layout, then rerun `openclaw security audit --deep`.",
+        "Check file permissions and plugin layout, then rerun `hands security audit --deep`.",
     });
     return [];
   });
@@ -809,7 +809,7 @@ export async function collectPluginsCodeSafetyFindings(params: {
         title: `Plugin "${pluginName}" has extension entry path traversal`,
         detail: `Found extension entries that escape the plugin directory:\n${escapedEntries.map((entry) => `  - ${entry}`).join("\n")}`,
         remediation:
-          "Update the plugin manifest so all openclaw.extensions entries stay inside the plugin directory.",
+          "Update the plugin manifest so all hands.extensions entries stay inside the plugin directory.",
       });
     }
 
@@ -824,7 +824,7 @@ export async function collectPluginsCodeSafetyFindings(params: {
           title: `Plugin "${pluginName}" code scan failed`,
           detail: `Static code scan could not complete: ${String(err)}`,
           remediation:
-            "Check file permissions and plugin layout, then rerun `openclaw security audit --deep`.",
+            "Check file permissions and plugin layout, then rerun `hands security audit --deep`.",
         });
         return null;
       });
@@ -842,7 +842,7 @@ export async function collectPluginsCodeSafetyFindings(params: {
         title: `Plugin "${pluginName}" contains dangerous code patterns`,
         detail: `Found ${summary.critical} critical issue(s) in ${summary.scannedFiles} scanned file(s):\n${details}`,
         remediation:
-          "Review the plugin source code carefully before use. If untrusted, remove the plugin from your OpenClaw extensions state directory.",
+          "Review the plugin source code carefully before use. If untrusted, remove the plugin from your Hands extensions state directory.",
       });
     } else if (summary.warn > 0) {
       const warnFindings = summary.findings.filter((f) => f.severity === "warn");
@@ -862,7 +862,7 @@ export async function collectPluginsCodeSafetyFindings(params: {
 }
 
 export async function collectInstalledSkillsCodeSafetyFindings(params: {
-  cfg: OpenClawConfig;
+  cfg: HandsConfig;
   stateDir: string;
 }): Promise<SecurityAuditFinding[]> {
   const findings: SecurityAuditFinding[] = [];
@@ -873,7 +873,7 @@ export async function collectInstalledSkillsCodeSafetyFindings(params: {
   for (const workspaceDir of workspaceDirs) {
     const entries = loadWorkspaceSkillEntries(workspaceDir, { config: params.cfg });
     for (const entry of entries) {
-      if (entry.skill.source === "openclaw-bundled") {
+      if (entry.skill.source === "hands-bundled") {
         continue;
       }
 
@@ -895,7 +895,7 @@ export async function collectInstalledSkillsCodeSafetyFindings(params: {
           title: `Skill "${skillName}" code scan failed`,
           detail: `Static code scan could not complete for ${skillDir}: ${String(err)}`,
           remediation:
-            "Check file permissions and skill layout, then rerun `openclaw security audit --deep`.",
+            "Check file permissions and skill layout, then rerun `hands security audit --deep`.",
         });
         return null;
       });

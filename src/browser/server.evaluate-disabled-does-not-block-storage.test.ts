@@ -41,9 +41,9 @@ vi.mock("../config/config.js", async (importOriginal) => {
       browser: {
         enabled: true,
         evaluateEnabled: false,
-        defaultProfile: "openclaw",
+        defaultProfile: "hands",
         profiles: {
-          openclaw: { cdpPort: testPort + 1, color: "#FF4500" },
+          hands: { cdpPort: testPort + 1, color: "#FF4500" },
         },
       },
     }),
@@ -77,8 +77,8 @@ async function getFreePort(): Promise<number> {
 describe("browser control evaluate gating", () => {
   beforeEach(async () => {
     testPort = await getFreePort();
-    prevGatewayPort = process.env.OPENCLAW_GATEWAY_PORT;
-    process.env.OPENCLAW_GATEWAY_PORT = String(testPort - 2);
+    prevGatewayPort = process.env.HANDS_GATEWAY_PORT;
+    process.env.HANDS_GATEWAY_PORT = String(testPort - 2);
 
     pwMocks.cookiesGetViaPlaywright.mockClear();
     pwMocks.storageGetViaPlaywright.mockClear();
@@ -90,9 +90,9 @@ describe("browser control evaluate gating", () => {
   afterEach(async () => {
     vi.restoreAllMocks();
     if (prevGatewayPort === undefined) {
-      delete process.env.OPENCLAW_GATEWAY_PORT;
+      delete process.env.HANDS_GATEWAY_PORT;
     } else {
-      process.env.OPENCLAW_GATEWAY_PORT = prevGatewayPort;
+      process.env.HANDS_GATEWAY_PORT = prevGatewayPort;
     }
 
     const { stopBrowserControlServer } = await import("./server.js");

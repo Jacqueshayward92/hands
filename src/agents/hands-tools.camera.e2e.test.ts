@@ -11,7 +11,7 @@ vi.mock("../media/image-ops.js", () => ({
 }));
 
 import "./test-helpers/fast-core-tools.js";
-import { createOpenClawTools } from "./openclaw-tools.js";
+import { createHandsTools } from "./hands-tools.js";
 
 describe("nodes camera_snap", () => {
   beforeEach(() => {
@@ -36,7 +36,7 @@ describe("nodes camera_snap", () => {
       throw new Error(`unexpected method: ${String(method)}`);
     });
 
-    const tool = createOpenClawTools().find((candidate) => candidate.name === "nodes");
+    const tool = createHandsTools().find((candidate) => candidate.name === "nodes");
     if (!tool) {
       throw new Error("missing nodes tool");
     }
@@ -74,7 +74,7 @@ describe("nodes camera_snap", () => {
       throw new Error(`unexpected method: ${String(method)}`);
     });
 
-    const tool = createOpenClawTools().find((candidate) => candidate.name === "nodes");
+    const tool = createHandsTools().find((candidate) => candidate.name === "nodes");
     if (!tool) {
       throw new Error("missing nodes tool");
     }
@@ -117,7 +117,7 @@ describe("nodes run", () => {
       throw new Error(`unexpected method: ${String(method)}`);
     });
 
-    const tool = createOpenClawTools().find((candidate) => candidate.name === "nodes");
+    const tool = createHandsTools().find((candidate) => candidate.name === "nodes");
     if (!tool) {
       throw new Error("missing nodes tool");
     }
@@ -166,7 +166,7 @@ describe("nodes run", () => {
       throw new Error(`unexpected method: ${String(method)}`);
     });
 
-    const tool = createOpenClawTools().find((candidate) => candidate.name === "nodes");
+    const tool = createHandsTools().find((candidate) => candidate.name === "nodes");
     if (!tool) {
       throw new Error("missing nodes tool");
     }
@@ -193,7 +193,7 @@ describe("nodes run", () => {
       throw new Error(`unexpected method: ${String(method)}`);
     });
 
-    const tool = createOpenClawTools().find((candidate) => candidate.name === "nodes");
+    const tool = createHandsTools().find((candidate) => candidate.name === "nodes");
     if (!tool) {
       throw new Error("missing nodes tool");
     }
@@ -208,7 +208,7 @@ describe("nodes run", () => {
   });
 
   it("fails closed for timeout and invalid approval decisions", async () => {
-    const tool = createOpenClawTools().find((candidate) => candidate.name === "nodes");
+    const tool = createHandsTools().find((candidate) => candidate.name === "nodes");
     if (!tool) {
       throw new Error("missing nodes tool");
     }

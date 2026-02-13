@@ -1,16 +1,16 @@
 {
-  "name": "@openclaw/memory-core",
+  "name": "@hands/memory-core",
   "version": "2026.2.13",
   "private": true,
-  "description": "OpenClaw core memory search plugin",
+  "description": "Hands core memory search plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "hands": "workspace:*"
   },
   "peerDependencies": {
-    "openclaw": ">=2026.1.26"
+    "hands": ">=2026.1.26"
   },
-  "openclaw": {
+  "hands": {
     "extensions": [
       "./index.ts"
     ]

@@ -51,7 +51,7 @@ const PATTERN_MAP: Array<{ pattern: RegExp; tags: ContextTag[] }> = [
   // Tool-specific patterns
   { pattern: /\b(?:camera|vigi|snapshot|alert|motion|ptz)\b/i, tags: ["tools", "technical"] },
   { pattern: /\b(?:tts|voice|speak|audio|qwen|kayla.*voice)\b/i, tags: ["tools", "technical"] },
-  { pattern: /\b(?:browser|openclaw.*profile|playwright)\b/i, tags: ["tools", "technical"] },
+  { pattern: /\b(?:browser|hands.*profile|playwright)\b/i, tags: ["tools", "technical"] },
   { pattern: /\b(?:google.*drive|drive.*letter|mount)\b/i, tags: ["tools", "files"] },
   { pattern: /\b(?:excel|xlsx|csv|spreadsheet|pandas|openpyxl)\b/i, tags: ["tools", "files"] },
   { pattern: /\b(?:pdf|docx?|word|powerpoint|pptx)\b/i, tags: ["tools", "files"] },

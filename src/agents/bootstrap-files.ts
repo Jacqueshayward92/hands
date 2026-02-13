@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { HandsConfig } from "../config/config.js";
 import type { EmbeddedContextFile } from "./pi-embedded-helpers.js";
 import { applyBootstrapHookOverrides } from "./bootstrap-hooks.js";
 import { buildBootstrapContextFiles, resolveBootstrapMaxChars } from "./pi-embedded-helpers.js";
@@ -21,7 +21,7 @@ export function makeBootstrapWarn(params: {
 
 export async function resolveBootstrapFilesForRun(params: {
   workspaceDir: string;
-  config?: OpenClawConfig;
+  config?: HandsConfig;
   sessionKey?: string;
   sessionId?: string;
   agentId?: string;
@@ -55,7 +55,7 @@ export async function resolveBootstrapFilesForRun(params: {
 
 export async function resolveBootstrapContextForRun(params: {
   workspaceDir: string;
-  config?: OpenClawConfig;
+  config?: HandsConfig;
   sessionKey?: string;
   sessionId?: string;
   agentId?: string;

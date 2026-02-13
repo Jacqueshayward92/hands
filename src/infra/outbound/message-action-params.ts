@@ -5,7 +5,7 @@ import type {
   ChannelMessageActionName,
   ChannelThreadingToolContext,
 } from "../../channels/plugins/types.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { HandsConfig } from "../../config/config.js";
 import { assertMediaNotDataUrl, resolveSandboxedMediaSource } from "../../agents/sandbox-paths.js";
 import { readStringParam } from "../../agents/tools/common.js";
 import { extensionForMime } from "../../media/mime.js";
@@ -88,7 +88,7 @@ export function resolveTelegramAutoThreadId(params: {
 }
 
 function resolveAttachmentMaxBytes(params: {
-  cfg: OpenClawConfig;
+  cfg: HandsConfig;
   channel: ChannelId;
   accountId?: string | null;
 }): number | undefined {
@@ -216,7 +216,7 @@ export async function normalizeSandboxMediaList(params: {
 }
 
 export async function hydrateSetGroupIconParams(params: {
-  cfg: OpenClawConfig;
+  cfg: HandsConfig;
   channel: ChannelId;
   accountId?: string | null;
   args: Record<string, unknown>;
@@ -276,7 +276,7 @@ export async function hydrateSetGroupIconParams(params: {
 }
 
 export async function hydrateSendAttachmentParams(params: {
-  cfg: OpenClawConfig;
+  cfg: HandsConfig;
   channel: ChannelId;
   accountId?: string | null;
   args: Record<string, unknown>;

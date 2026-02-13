@@ -278,7 +278,7 @@ export function createSandboxedReadTool(params: SandboxToolParams) {
   const base = createReadTool(params.root, {
     operations: createSandboxReadOperations(params),
   }) as unknown as AnyAgentTool;
-  return wrapSandboxPathGuard(createOpenClawReadTool(base), params.root);
+  return wrapSandboxPathGuard(createHandsReadTool(base), params.root);
 }
 
 export function createSandboxedWriteTool(params: SandboxToolParams) {
@@ -301,7 +301,7 @@ export function createSandboxedEditTool(params: SandboxToolParams) {
   );
 }
 
-export function createOpenClawReadTool(base: AnyAgentTool): AnyAgentTool {
+export function createHandsReadTool(base: AnyAgentTool): AnyAgentTool {
   const patched = patchToolSchemaForClaudeCompatibility(base);
   return {
     ...patched,

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { HandsConfig } from "../../config/config.js";
 
 const mocks = vi.hoisted(() => ({
   loadSessionStore: vi.fn(),
@@ -32,7 +32,7 @@ describe("resolveSessionKeyForRequest", () => {
     return await import("./session.js");
   }
 
-  const baseCfg: OpenClawConfig = {};
+  const baseCfg: HandsConfig = {};
 
   it("returns sessionKey when --to resolves a session key via context", async () => {
     const { resolveSessionKeyForRequest } = await importFresh();

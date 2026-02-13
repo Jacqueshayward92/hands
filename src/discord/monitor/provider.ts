@@ -5,7 +5,7 @@ import { HttpsProxyAgent } from "https-proxy-agent";
 import { inspect } from "node:util";
 import WebSocket from "ws";
 import type { HistoryEntry } from "../../auto-reply/reply/history.js";
-import type { OpenClawConfig, ReplyToMode } from "../../config/config.js";
+import type { HandsConfig, ReplyToMode } from "../../config/config.js";
 import type { DiscordAccountConfig } from "../../config/types.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { resolveTextChunkLimit } from "../../auto-reply/chunk.js";
@@ -49,7 +49,7 @@ import { resolveDiscordPresenceUpdate } from "./presence.js";
 export type MonitorDiscordOpts = {
   token?: string;
   accountId?: string;
-  config?: OpenClawConfig;
+  config?: HandsConfig;
   runtime?: RuntimeEnv;
   abortSignal?: AbortSignal;
   mediaMaxMb?: number;

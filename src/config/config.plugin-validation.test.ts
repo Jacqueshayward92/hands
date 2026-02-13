@@ -24,7 +24,7 @@ async function writePluginFixture(params: {
     manifest.channels = params.channels;
   }
   await fs.writeFile(
-    path.join(params.dir, "openclaw.plugin.json"),
+    path.join(params.dir, "hands.plugin.json"),
     JSON.stringify(manifest, null, 2),
     "utf-8",
   );
@@ -32,7 +32,7 @@ async function writePluginFixture(params: {
 
 describe("config plugin validation", () => {
   const validateInHome = (home: string, raw: unknown) => {
-    process.env.OPENCLAW_STATE_DIR = path.join(home, ".openclaw");
+    process.env.HANDS_STATE_DIR = path.join(home, ".hands");
     return validateConfigObjectWithPlugins(raw);
   };
 

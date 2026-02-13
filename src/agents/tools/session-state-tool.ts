@@ -2,7 +2,7 @@ import { Type } from "@sinclair/typebox";
 import type { AnyAgentTool } from "./common.js";
 import { readStringParam } from "./common.js";
 import { resolveSessionAgentId } from "../agent-scope.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { HandsConfig } from "../../config/config.js";
 import { getState, setState, deleteState, listState } from "../../state/session-state-store.js";
 
 const SessionStateToolSchema = Type.Object({
@@ -21,7 +21,7 @@ const SessionStateToolSchema = Type.Object({
 
 export function createSessionStateTool(opts?: {
   agentSessionKey?: string;
-  config?: OpenClawConfig;
+  config?: HandsConfig;
 }): AnyAgentTool {
   return {
     label: "Session State",

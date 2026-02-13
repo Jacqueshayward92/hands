@@ -175,7 +175,7 @@ describe("cli program (nodes media)", () => {
 
     const out = String(runtime.log.mock.calls[0]?.[0] ?? "");
     const mediaPath = out.replace(/^MEDIA:/, "").trim();
-    expect(mediaPath).toMatch(/openclaw-camera-clip-front-.*\.mp4$/);
+    expect(mediaPath).toMatch(/hands-camera-clip-front-.*\.mp4$/);
 
     try {
       await expect(fs.readFile(mediaPath, "utf8")).resolves.toBe("hi");
@@ -422,7 +422,7 @@ describe("cli program (nodes media)", () => {
 
     const out = String(runtime.log.mock.calls[0]?.[0] ?? "");
     const mediaPath = out.replace(/^MEDIA:/, "").trim();
-    expect(mediaPath).toMatch(/openclaw-canvas-snapshot-.*\.png$/);
+    expect(mediaPath).toMatch(/hands-canvas-snapshot-.*\.png$/);
 
     try {
       await expect(fs.readFile(mediaPath, "utf8")).resolves.toBe("hi");
@@ -521,7 +521,7 @@ describe("cli program (nodes media)", () => {
 
       const out = String(runtime.log.mock.calls[0]?.[0] ?? "");
       const mediaPath = out.replace(/^MEDIA:/, "").trim();
-      expect(mediaPath).toMatch(/openclaw-camera-snap-front-.*\.jpg$/);
+      expect(mediaPath).toMatch(/hands-camera-snap-front-.*\.jpg$/);
 
       try {
         await expect(fs.readFile(mediaPath, "utf8")).resolves.toBe("url-content");
@@ -570,7 +570,7 @@ describe("cli program (nodes media)", () => {
 
       const out = String(runtime.log.mock.calls[0]?.[0] ?? "");
       const mediaPath = out.replace(/^MEDIA:/, "").trim();
-      expect(mediaPath).toMatch(/openclaw-camera-clip-front-.*\.mp4$/);
+      expect(mediaPath).toMatch(/hands-camera-clip-front-.*\.mp4$/);
 
       try {
         await expect(fs.readFile(mediaPath, "utf8")).resolves.toBe("url-content");

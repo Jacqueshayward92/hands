@@ -1,13 +1,13 @@
 {
-  "name": "@openclaw/imessage",
+  "name": "@hands/imessage",
   "version": "2026.2.13",
   "private": true,
-  "description": "OpenClaw iMessage channel plugin",
+  "description": "Hands iMessage channel plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "hands": "workspace:*"
   },
-  "openclaw": {
+  "hands": {
     "extensions": [
       "./index.ts"
     ]

@@ -11,7 +11,7 @@ import { Type } from "@sinclair/typebox";
 import type { AnyAgentTool } from "./common.js";
 import { readStringParam } from "./common.js";
 import { resolveSessionAgentId } from "../agent-scope.js";
-import type { OpenClawConfig } from "../../config/config.js";
+import type { HandsConfig } from "../../config/config.js";
 import {
   createTask,
   updateTask,
@@ -101,7 +101,7 @@ const VALID_PRIORITIES = new Set(["critical", "high", "normal", "low"]);
 
 export function createTaskLedgerTool(opts?: {
   agentSessionKey?: string;
-  config?: OpenClawConfig;
+  config?: HandsConfig;
 }): AnyAgentTool {
   return {
     label: "Task Ledger",

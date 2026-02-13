@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { HandsConfig } from "../config/config.js";
 import type { WizardPrompter, WizardSelectOption } from "../wizard/prompts.js";
 import {
   ensureAuthProfileStore,
@@ -38,7 +38,7 @@ const VLLM_DEFAULT_COST = {
 const HIDDEN_ROUTER_MODELS = new Set(["openrouter/auto"]);
 
 type PromptDefaultModelParams = {
-  config: OpenClawConfig;
+  config: HandsConfig;
   prompter: WizardPrompter;
   allowKeep?: boolean;
   includeManual?: boolean;
@@ -49,12 +49,12 @@ type PromptDefaultModelParams = {
   message?: string;
 };
 
-type PromptDefaultModelResult = { model?: string; config?: OpenClawConfig };
+type PromptDefaultModelResult = { model?: string; config?: HandsConfig };
 type PromptModelAllowlistResult = { models?: string[] };
 
 function hasAuthForProvider(
   provider: string,
-  cfg: OpenClawConfig,
+  cfg: HandsConfig,
   store: ReturnType<typeof ensureAuthProfileStore>,
 ) {
   if (listProfilesForProvider(store, provider).length > 0) {
@@ -69,7 +69,7 @@ function hasAuthForProvider(
   return false;
 }
 
-function resolveConfiguredModelRaw(cfg: OpenClawConfig): string {
+function resolveConfiguredModelRaw(cfg: HandsConfig): string {
   const raw = cfg.agents?.defaults?.model as { primary?: string } | string | undefined;
   if (typeof raw === "string") {
     return raw.trim();
@@ -77,7 +77,7 @@ function resolveConfiguredModelRaw(cfg: OpenClawConfig): string {
   return raw?.primary?.trim() ?? "";
 }
 
-function resolveConfiguredModelKeys(cfg: OpenClawConfig): string[] {
+function resolveConfiguredModelKeys(cfg: HandsConfig): string[] {
   const models = cfg.agents?.defaults?.models ?? {};
   return Object.keys(models)
     .map((key) => String(key ?? "").trim())
@@ -356,7 +356,7 @@ export async function promptDefaultModel(
       agentDir,
     });
 
-    const nextConfig: OpenClawConfig = {
+    const nextConfig: HandsConfig = {
       ...cfg,
       models: {
         ...cfg.models,
@@ -389,7 +389,7 @@ export async function promptDefaultModel(
 }
 
 export async function promptModelAllowlist(params: {
-  config: OpenClawConfig;
+  config: HandsConfig;
   prompter: WizardPrompter;
   message?: string;
   agentDir?: string;
@@ -540,7 +540,7 @@ export async function promptModelAllowlist(params: {
   return { models: [] };
 }
 
-export function applyPrimaryModel(cfg: OpenClawConfig, model: string): OpenClawConfig {
+export function applyPrimaryModel(cfg: HandsConfig, model: string): HandsConfig {
   const defaults = cfg.agents?.defaults;
   const existingModel = defaults?.model;
   const existingModels = defaults?.models;
@@ -567,7 +567,7 @@ export function applyPrimaryModel(cfg: OpenClawConfig, model: string): OpenClawC
   };
 }
 
-export function applyModelAllowlist(cfg: OpenClawConfig, models: string[]): OpenClawConfig {
+export function applyModelAllowlist(cfg: HandsConfig, models: string[]): HandsConfig {
   const defaults = cfg.agents?.defaults;
   const normalized = normalizeModelKeys(models);
   if (normalized.length === 0) {
@@ -603,9 +603,9 @@ export function applyModelAllowlist(cfg: OpenClawConfig, models: string[]): Open
 }
 
 export function applyModelFallbacksFromSelection(
-  cfg: OpenClawConfig,
+  cfg: HandsConfig,
   selection: string[],
-): OpenClawConfig {
+): HandsConfig {
   const normalized = normalizeModelKeys(selection);
   if (normalized.length <= 1) {
     return cfg;

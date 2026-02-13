@@ -1,13 +1,13 @@
 {
-  "name": "@openclaw/telegram",
+  "name": "@hands/telegram",
   "version": "2026.2.13",
   "private": true,
-  "description": "OpenClaw Telegram channel plugin",
+  "description": "Hands Telegram channel plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "hands": "workspace:*"
   },
-  "openclaw": {
+  "hands": {
     "extensions": [
       "./index.ts"
     ]

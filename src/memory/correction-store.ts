@@ -19,7 +19,7 @@ export type CorrectionEntry = {
 
 function resolveCorrectionsDir(): string {
   const home = os.homedir();
-  return path.join(home, ".openclaw", "corrections");
+  return path.join(home, ".hands", "corrections");
 }
 
 async function getStorePath(agentId: string): Promise<string> {

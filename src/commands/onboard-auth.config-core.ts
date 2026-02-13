@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { HandsConfig } from "../config/config.js";
 import type { ModelApi } from "../config/types.models.js";
 import {
   buildHuggingfaceModelDefinition,
@@ -66,9 +66,9 @@ import {
 } from "./onboard-auth.models.js";
 
 export function applyZaiProviderConfig(
-  cfg: OpenClawConfig,
+  cfg: HandsConfig,
   params?: { endpoint?: string; modelId?: string },
-): OpenClawConfig {
+): HandsConfig {
   const modelId = params?.modelId?.trim() || ZAI_DEFAULT_MODEL_ID;
   const modelRef = `zai/${modelId}`;
 
@@ -135,9 +135,9 @@ export function applyZaiProviderConfig(
 }
 
 export function applyZaiConfig(
-  cfg: OpenClawConfig,
+  cfg: HandsConfig,
   params?: { endpoint?: string; modelId?: string },
-): OpenClawConfig {
+): HandsConfig {
   const modelId = params?.modelId?.trim() || ZAI_DEFAULT_MODEL_ID;
   const modelRef = modelId === ZAI_DEFAULT_MODEL_ID ? ZAI_DEFAULT_MODEL_REF : `zai/${modelId}`;
   const next = applyZaiProviderConfig(cfg, params);
@@ -162,7 +162,7 @@ export function applyZaiConfig(
   };
 }
 
-export function applyOpenrouterProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyOpenrouterProviderConfig(cfg: HandsConfig): HandsConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[OPENROUTER_DEFAULT_MODEL_REF] = {
     ...models[OPENROUTER_DEFAULT_MODEL_REF],
@@ -181,7 +181,7 @@ export function applyOpenrouterProviderConfig(cfg: OpenClawConfig): OpenClawConf
   };
 }
 
-export function applyOpenrouterConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyOpenrouterConfig(cfg: HandsConfig): HandsConfig {
   const next = applyOpenrouterProviderConfig(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -203,18 +203,18 @@ export function applyOpenrouterConfig(cfg: OpenClawConfig): OpenClawConfig {
   };
 }
 
-export function applyMoonshotProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyMoonshotProviderConfig(cfg: HandsConfig): HandsConfig {
   return applyMoonshotProviderConfigWithBaseUrl(cfg, MOONSHOT_BASE_URL);
 }
 
-export function applyMoonshotProviderConfigCn(cfg: OpenClawConfig): OpenClawConfig {
+export function applyMoonshotProviderConfigCn(cfg: HandsConfig): HandsConfig {
   return applyMoonshotProviderConfigWithBaseUrl(cfg, MOONSHOT_CN_BASE_URL);
 }
 
 function applyMoonshotProviderConfigWithBaseUrl(
-  cfg: OpenClawConfig,
+  cfg: HandsConfig,
   baseUrl: string,
-): OpenClawConfig {
+): HandsConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[MOONSHOT_DEFAULT_MODEL_REF] = {
     ...models[MOONSHOT_DEFAULT_MODEL_REF],
@@ -257,7 +257,7 @@ function applyMoonshotProviderConfigWithBaseUrl(
   };
 }
 
-export function applyMoonshotConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyMoonshotConfig(cfg: HandsConfig): HandsConfig {
   const next = applyMoonshotProviderConfig(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -279,7 +279,7 @@ export function applyMoonshotConfig(cfg: OpenClawConfig): OpenClawConfig {
   };
 }
 
-export function applyMoonshotConfigCn(cfg: OpenClawConfig): OpenClawConfig {
+export function applyMoonshotConfigCn(cfg: HandsConfig): HandsConfig {
   const next = applyMoonshotProviderConfigCn(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -301,7 +301,7 @@ export function applyMoonshotConfigCn(cfg: OpenClawConfig): OpenClawConfig {
   };
 }
 
-export function applyKimiCodeProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyKimiCodeProviderConfig(cfg: HandsConfig): HandsConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[KIMI_CODING_MODEL_REF] = {
     ...models[KIMI_CODING_MODEL_REF],
@@ -320,7 +320,7 @@ export function applyKimiCodeProviderConfig(cfg: OpenClawConfig): OpenClawConfig
   };
 }
 
-export function applyKimiCodeConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyKimiCodeConfig(cfg: HandsConfig): HandsConfig {
   const next = applyKimiCodeProviderConfig(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -342,7 +342,7 @@ export function applyKimiCodeConfig(cfg: OpenClawConfig): OpenClawConfig {
   };
 }
 
-export function applySyntheticProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applySyntheticProviderConfig(cfg: HandsConfig): HandsConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[SYNTHETIC_DEFAULT_MODEL_REF] = {
     ...models[SYNTHETIC_DEFAULT_MODEL_REF],
@@ -389,7 +389,7 @@ export function applySyntheticProviderConfig(cfg: OpenClawConfig): OpenClawConfi
   };
 }
 
-export function applySyntheticConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applySyntheticConfig(cfg: HandsConfig): HandsConfig {
   const next = applySyntheticProviderConfig(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -411,7 +411,7 @@ export function applySyntheticConfig(cfg: OpenClawConfig): OpenClawConfig {
   };
 }
 
-export function applyXiaomiProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyXiaomiProviderConfig(cfg: HandsConfig): HandsConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[XIAOMI_DEFAULT_MODEL_REF] = {
     ...models[XIAOMI_DEFAULT_MODEL_REF],
@@ -460,7 +460,7 @@ export function applyXiaomiProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   };
 }
 
-export function applyXiaomiConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyXiaomiConfig(cfg: HandsConfig): HandsConfig {
   const next = applyXiaomiProviderConfig(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -486,7 +486,7 @@ export function applyXiaomiConfig(cfg: OpenClawConfig): OpenClawConfig {
  * Apply Venice provider configuration without changing the default model.
  * Registers Venice models and sets up the provider, but preserves existing model selection.
  */
-export function applyVeniceProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyVeniceProviderConfig(cfg: HandsConfig): HandsConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[VENICE_DEFAULT_MODEL_REF] = {
     ...models[VENICE_DEFAULT_MODEL_REF],
@@ -535,7 +535,7 @@ export function applyVeniceProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
  * Apply Venice provider configuration AND set Venice as the default model.
  * Use this when Venice is the primary provider choice during onboarding.
  */
-export function applyVeniceConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyVeniceConfig(cfg: HandsConfig): HandsConfig {
   const next = applyVeniceProviderConfig(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -561,7 +561,7 @@ export function applyVeniceConfig(cfg: OpenClawConfig): OpenClawConfig {
  * Apply Together provider configuration without changing the default model.
  * Registers Together models and sets up the provider, but preserves existing model selection.
  */
-export function applyTogetherProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyTogetherProviderConfig(cfg: HandsConfig): HandsConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[TOGETHER_DEFAULT_MODEL_REF] = {
     ...models[TOGETHER_DEFAULT_MODEL_REF],
@@ -612,7 +612,7 @@ export function applyTogetherProviderConfig(cfg: OpenClawConfig): OpenClawConfig
  * Apply Together provider configuration AND set Together as the default model.
  * Use this when Together is the primary provider choice during onboarding.
  */
-export function applyTogetherConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyTogetherConfig(cfg: HandsConfig): HandsConfig {
   const next = applyTogetherProviderConfig(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -637,7 +637,7 @@ export function applyTogetherConfig(cfg: OpenClawConfig): OpenClawConfig {
 /**
  * Apply Hugging Face (Inference Providers) provider configuration without changing the default model.
  */
-export function applyHuggingfaceProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyHuggingfaceProviderConfig(cfg: HandsConfig): HandsConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[HUGGINGFACE_DEFAULT_MODEL_REF] = {
     ...models[HUGGINGFACE_DEFAULT_MODEL_REF],
@@ -685,7 +685,7 @@ export function applyHuggingfaceProviderConfig(cfg: OpenClawConfig): OpenClawCon
 /**
  * Apply Hugging Face provider configuration AND set Hugging Face as the default model.
  */
-export function applyHuggingfaceConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyHuggingfaceConfig(cfg: HandsConfig): HandsConfig {
   const next = applyHuggingfaceProviderConfig(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -707,7 +707,7 @@ export function applyHuggingfaceConfig(cfg: OpenClawConfig): OpenClawConfig {
   };
 }
 
-export function applyXaiProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyXaiProviderConfig(cfg: HandsConfig): HandsConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[XAI_DEFAULT_MODEL_REF] = {
     ...models[XAI_DEFAULT_MODEL_REF],
@@ -750,7 +750,7 @@ export function applyXaiProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
   };
 }
 
-export function applyXaiConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyXaiConfig(cfg: HandsConfig): HandsConfig {
   const next = applyXaiProviderConfig(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {
@@ -773,7 +773,7 @@ export function applyXaiConfig(cfg: OpenClawConfig): OpenClawConfig {
 }
 
 export function applyAuthProfileConfig(
-  cfg: OpenClawConfig,
+  cfg: HandsConfig,
   params: {
     profileId: string;
     provider: string;
@@ -781,7 +781,7 @@ export function applyAuthProfileConfig(
     email?: string;
     preferProfileFirst?: boolean;
   },
-): OpenClawConfig {
+): HandsConfig {
   const profiles = {
     ...cfg.auth?.profiles,
     [params.profileId]: {
@@ -821,7 +821,7 @@ export function applyAuthProfileConfig(
   };
 }
 
-export function applyQianfanProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyQianfanProviderConfig(cfg: HandsConfig): HandsConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[QIANFAN_DEFAULT_MODEL_REF] = {
     ...models[QIANFAN_DEFAULT_MODEL_REF],
@@ -876,7 +876,7 @@ export function applyQianfanProviderConfig(cfg: OpenClawConfig): OpenClawConfig 
   };
 }
 
-export function applyQianfanConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyQianfanConfig(cfg: HandsConfig): HandsConfig {
   const next = applyQianfanProviderConfig(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {

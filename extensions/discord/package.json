@@ -1,12 +1,12 @@
 {
-  "name": "@openclaw/discord",
+  "name": "@hands/discord",
   "version": "2026.2.13",
-  "description": "OpenClaw Discord channel plugin",
+  "description": "Hands Discord channel plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "hands": "workspace:*"
   },
-  "openclaw": {
+  "hands": {
     "extensions": [
       "./index.ts"
     ]

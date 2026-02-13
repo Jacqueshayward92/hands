@@ -2,9 +2,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-export const POSIX_OPENCLAW_TMP_DIR = "/tmp/openclaw";
+export const POSIX_HANDS_TMP_DIR = "/tmp/hands";
 
-type ResolvePreferredOpenClawTmpDirOptions = {
+type ResolvePreferredHandsTmpDirOptions = {
   accessSync?: (path: string, mode?: number) => void;
   statSync?: (path: string) => { isDirectory(): boolean };
   tmpdir?: () => string;
@@ -21,30 +21,30 @@ function isNodeErrorWithCode(err: unknown, code: string): err is MaybeNodeError 
   );
 }
 
-export function resolvePreferredOpenClawTmpDir(
-  options: ResolvePreferredOpenClawTmpDirOptions = {},
+export function resolvePreferredHandsTmpDir(
+  options: ResolvePreferredHandsTmpDirOptions = {},
 ): string {
   const accessSync = options.accessSync ?? fs.accessSync;
   const statSync = options.statSync ?? fs.statSync;
   const tmpdir = options.tmpdir ?? os.tmpdir;
 
   try {
-    const preferred = statSync(POSIX_OPENCLAW_TMP_DIR);
+    const preferred = statSync(POSIX_HANDS_TMP_DIR);
     if (!preferred.isDirectory()) {
-      return path.join(tmpdir(), "openclaw");
+      return path.join(tmpdir(), "hands");
     }
-    accessSync(POSIX_OPENCLAW_TMP_DIR, fs.constants.W_OK | fs.constants.X_OK);
-    return POSIX_OPENCLAW_TMP_DIR;
+    accessSync(POSIX_HANDS_TMP_DIR, fs.constants.W_OK | fs.constants.X_OK);
+    return POSIX_HANDS_TMP_DIR;
   } catch (err) {
     if (!isNodeErrorWithCode(err, "ENOENT")) {
-      return path.join(tmpdir(), "openclaw");
+      return path.join(tmpdir(), "hands");
     }
   }
 
   try {
     accessSync("/tmp", fs.constants.W_OK | fs.constants.X_OK);
-    return POSIX_OPENCLAW_TMP_DIR;
+    return POSIX_HANDS_TMP_DIR;
   } catch {
-    return path.join(tmpdir(), "openclaw");
+    return path.join(tmpdir(), "hands");
   }
 }

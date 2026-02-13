@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
 import type { ConfigUiHints } from "./schema.js";
-import type { ConfigFileSnapshot } from "./types.openclaw.js";
+import type { ConfigFileSnapshot } from "./types.hands.js";
 import {
   REDACTED_SENTINEL,
   redactConfigSnapshot,
   restoreRedactedValues as restoreRedactedValues_orig,
 } from "./redact-snapshot.js";
 import { __test__ } from "./schema.hints.js";
-import { OpenClawSchema } from "./zod-schema.js";
+import { HandsSchema } from "./zod-schema.js";
 
 const { mapSensitivePaths } = __test__;
 
 function makeSnapshot(config: Record<string, unknown>, raw?: string): ConfigFileSnapshot {
   return {
-    path: "/home/user/.openclaw/config.json5",
+    path: "/home/user/.hands/config.json5",
     exists: true,
     raw: raw ?? JSON.stringify(config),
     parsed: config,
@@ -847,12 +847,12 @@ describe("restoreRedactedValues", () => {
 
 describe("realredactConfigSnapshot_real", () => {
   it("main schema redact works (samples)", () => {
-    const schema = OpenClawSchema.toJSONSchema({
+    const schema = HandsSchema.toJSONSchema({
       target: "draft-07",
       unrepresentable: "any",
     });
-    schema.title = "OpenClawConfig";
-    const hints = mapSensitivePaths(OpenClawSchema, "", {});
+    schema.title = "HandsConfig";
+    const hints = mapSensitivePaths(HandsSchema, "", {});
 
     const snapshot = makeSnapshot({
       agents: {

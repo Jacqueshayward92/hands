@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthRateLimiter } from "./auth-rate-limit.js";
-import { createOpenClawTools } from "../agents/openclaw-tools.js";
+import { createHandsTools } from "../agents/hands-tools.js";
 import {
   filterToolsByPolicy,
   resolveEffectiveToolPolicy,
@@ -39,7 +39,7 @@ const MEMORY_TOOL_NAMES = new Set(["memory_search", "memory_get"]);
 /**
  * Tools denied via HTTP /tools/invoke regardless of session policy.
  * Prevents RCE and privilege escalation from HTTP API surface.
- * Configurable via gateway.tools.{deny,allow} in openclaw.json.
+ * Configurable via gateway.tools.{deny,allow} in hands.json.
  */
 const DEFAULT_GATEWAY_HTTP_TOOL_DENY = [
   // Session orchestration — spawning agents remotely is RCE
@@ -216,9 +216,9 @@ export async function handleToolsInvokeHttpRequest(
 
   // Resolve message channel/account hints (optional headers) for policy inheritance.
   const messageChannel = normalizeMessageChannel(
-    getHeader(req, "x-openclaw-message-channel") ?? "",
+    getHeader(req, "x-hands-message-channel") ?? "",
   );
-  const accountId = getHeader(req, "x-openclaw-account-id")?.trim() || undefined;
+  const accountId = getHeader(req, "x-hands-account-id")?.trim() || undefined;
 
   const {
     agentId,
@@ -257,7 +257,7 @@ export async function handleToolsInvokeHttpRequest(
     : undefined;
 
   // Build tool list (core + plugin tools).
-  const allTools = createOpenClawTools({
+  const allTools = createHandsTools({
     agentSessionKey: sessionKey,
     agentChannel: messageChannel ?? undefined,
     agentAccountId: accountId,

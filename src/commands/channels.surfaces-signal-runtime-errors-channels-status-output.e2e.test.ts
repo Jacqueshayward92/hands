@@ -39,7 +39,7 @@ const runtime: RuntimeEnv = {
 };
 
 const _baseSnapshot = {
-  path: "/tmp/openclaw.json",
+  path: "/tmp/hands.json",
   exists: true,
   raw: "{}",
   parsed: {},

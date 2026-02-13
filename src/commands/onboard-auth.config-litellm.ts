@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../config/config.js";
+import type { HandsConfig } from "../config/config.js";
 import { LITELLM_DEFAULT_MODEL_REF } from "./onboard-auth.credentials.js";
 
 export const LITELLM_BASE_URL = "http://localhost:4000";
@@ -32,7 +32,7 @@ function buildLitellmModelDefinition(): {
   };
 }
 
-export function applyLitellmProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyLitellmProviderConfig(cfg: HandsConfig): HandsConfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[LITELLM_DEFAULT_MODEL_REF] = {
     ...models[LITELLM_DEFAULT_MODEL_REF],
@@ -77,7 +77,7 @@ export function applyLitellmProviderConfig(cfg: OpenClawConfig): OpenClawConfig 
   };
 }
 
-export function applyLitellmConfig(cfg: OpenClawConfig): OpenClawConfig {
+export function applyLitellmConfig(cfg: HandsConfig): HandsConfig {
   const next = applyLitellmProviderConfig(cfg);
   const existingModel = next.agents?.defaults?.model;
   return {

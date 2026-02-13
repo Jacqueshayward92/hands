@@ -92,10 +92,10 @@ const spawnGatewayInstance = async (name: string): Promise<GatewayInstance> => {
   const port = await getFreePort();
   const hookToken = `token-${name}-${randomUUID()}`;
   const gatewayToken = `gateway-${name}-${randomUUID()}`;
-  const homeDir = await fs.mkdtemp(path.join(os.tmpdir(), `openclaw-e2e-${name}-`));
-  const configDir = path.join(homeDir, ".openclaw");
+  const homeDir = await fs.mkdtemp(path.join(os.tmpdir(), `hands-e2e-${name}-`));
+  const configDir = path.join(homeDir, ".hands");
   await fs.mkdir(configDir, { recursive: true });
-  const configPath = path.join(configDir, "openclaw.json");
+  const configPath = path.join(configDir, "hands.json");
   const stateDir = path.join(configDir, "state");
   const config = {
     gateway: { port, auth: { mode: "token", token: gatewayToken } },
@@ -124,13 +124,13 @@ const spawnGatewayInstance = async (name: string): Promise<GatewayInstance> => {
         env: {
           ...process.env,
           HOME: homeDir,
-          OPENCLAW_CONFIG_PATH: configPath,
-          OPENCLAW_STATE_DIR: stateDir,
-          OPENCLAW_GATEWAY_TOKEN: "",
-          OPENCLAW_GATEWAY_PASSWORD: "",
-          OPENCLAW_SKIP_CHANNELS: "1",
-          OPENCLAW_SKIP_BROWSER_CONTROL_SERVER: "1",
-          OPENCLAW_SKIP_CANVAS_HOST: "1",
+          HANDS_CONFIG_PATH: configPath,
+          HANDS_STATE_DIR: stateDir,
+          HANDS_GATEWAY_TOKEN: "",
+          HANDS_GATEWAY_PASSWORD: "",
+          HANDS_SKIP_CHANNELS: "1",
+          HANDS_SKIP_BROWSER_CONTROL_SERVER: "1",
+          HANDS_SKIP_CANVAS_HOST: "1",
         },
         stdio: ["ignore", "pipe", "pipe"],
       },
@@ -399,7 +399,7 @@ describe("gateway multi-instance e2e", () => {
             text: "wake a",
             mode: "now",
           },
-          { "x-openclaw-token": gwA.hookToken },
+          { "x-hands-token": gwA.hookToken },
         ),
         postJson(
           `http://127.0.0.1:${gwB.port}/hooks/wake`,
@@ -407,7 +407,7 @@ describe("gateway multi-instance e2e", () => {
             text: "wake b",
             mode: "now",
           },
-          { "x-openclaw-token": gwB.hookToken },
+          { "x-hands-token": gwB.hookToken },
         ),
       ]);
       expect(hookResA.status).toBe(200);

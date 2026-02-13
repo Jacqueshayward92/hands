@@ -1,20 +1,20 @@
 type StateDirEnvSnapshot = {
-  openclawStateDir: string | undefined;
+  handsStateDir: string | undefined;
   clawdbotStateDir: string | undefined;
 };
 
 export function snapshotStateDirEnv(): StateDirEnvSnapshot {
   return {
-    openclawStateDir: process.env.OPENCLAW_STATE_DIR,
+    handsStateDir: process.env.HANDS_STATE_DIR,
     clawdbotStateDir: process.env.CLAWDBOT_STATE_DIR,
   };
 }
 
 export function restoreStateDirEnv(snapshot: StateDirEnvSnapshot): void {
-  if (snapshot.openclawStateDir === undefined) {
-    delete process.env.OPENCLAW_STATE_DIR;
+  if (snapshot.handsStateDir === undefined) {
+    delete process.env.HANDS_STATE_DIR;
   } else {
-    process.env.OPENCLAW_STATE_DIR = snapshot.openclawStateDir;
+    process.env.HANDS_STATE_DIR = snapshot.handsStateDir;
   }
   if (snapshot.clawdbotStateDir === undefined) {
     delete process.env.CLAWDBOT_STATE_DIR;
@@ -24,6 +24,6 @@ export function restoreStateDirEnv(snapshot: StateDirEnvSnapshot): void {
 }
 
 export function setStateDirEnv(stateDir: string): void {
-  process.env.OPENCLAW_STATE_DIR = stateDir;
+  process.env.HANDS_STATE_DIR = stateDir;
   delete process.env.CLAWDBOT_STATE_DIR;
 }

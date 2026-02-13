@@ -1,13 +1,13 @@
 {
-  "name": "@openclaw/mattermost",
+  "name": "@hands/mattermost",
   "version": "2026.2.13",
   "private": true,
-  "description": "OpenClaw Mattermost channel plugin",
+  "description": "Hands Mattermost channel plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "hands": "workspace:*"
   },
-  "openclaw": {
+  "hands": {
     "extensions": [
       "./index.ts"
     ],
@@ -21,7 +21,7 @@
       "order": 65
     },
     "install": {
-      "npmSpec": "@openclaw/mattermost",
+      "npmSpec": "@hands/mattermost",
       "localPath": "extensions/mattermost",
       "defaultChoice": "npm"
     }

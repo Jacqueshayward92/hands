@@ -26,10 +26,10 @@ async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
     },
     {
       env: {
-        OPENCLAW_AGENT_DIR: (home) => path.join(home, ".openclaw", "agent"),
-        PI_CODING_AGENT_DIR: (home) => path.join(home, ".openclaw", "agent"),
+        HANDS_AGENT_DIR: (home) => path.join(home, ".hands", "agent"),
+        PI_CODING_AGENT_DIR: (home) => path.join(home, ".hands", "agent"),
       },
-      prefix: "openclaw-rawbody-",
+      prefix: "hands-rawbody-",
     },
   );
 }
@@ -66,7 +66,7 @@ describe("RawBody directive parsing", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "openclaw"),
+              workspace: path.join(home, "hands"),
             },
           },
           channels: { whatsapp: { allowFrom: ["*"] } },
@@ -100,7 +100,7 @@ describe("RawBody directive parsing", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "openclaw"),
+              workspace: path.join(home, "hands"),
               models: {
                 "anthropic/claude-opus-4-5": {},
               },
@@ -137,7 +137,7 @@ describe("RawBody directive parsing", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "openclaw"),
+              workspace: path.join(home, "hands"),
             },
           },
           channels: { whatsapp: { allowFrom: ["*"] } },
@@ -175,7 +175,7 @@ describe("RawBody directive parsing", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "openclaw"),
+              workspace: path.join(home, "hands"),
             },
           },
           channels: { whatsapp: { allowFrom: ["+1222"] } },
@@ -221,7 +221,7 @@ describe("RawBody directive parsing", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "openclaw"),
+              workspace: path.join(home, "hands"),
             },
           },
           channels: { whatsapp: { allowFrom: ["*"] } },
@@ -246,7 +246,7 @@ describe("RawBody directive parsing", () => {
       const agentId = "worker1";
       const sessionId = "sess-worker-1";
       const sessionKey = `agent:${agentId}:telegram:12345`;
-      const sessionsDir = path.join(home, ".openclaw", "agents", agentId, "sessions");
+      const sessionsDir = path.join(home, ".hands", "agents", agentId, "sessions");
       const sessionFile = path.join(sessionsDir, `${sessionId}.jsonl`);
       const storePath = path.join(sessionsDir, "sessions.json");
       await fs.mkdir(sessionsDir, { recursive: true });
@@ -282,7 +282,7 @@ describe("RawBody directive parsing", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "openclaw"),
+              workspace: path.join(home, "hands"),
             },
           },
         },

@@ -1,12 +1,12 @@
 {
-  "name": "@openclaw/irc",
+  "name": "@hands/irc",
   "version": "2026.2.13",
-  "description": "OpenClaw IRC channel plugin",
+  "description": "Hands IRC channel plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "hands": "workspace:*"
   },
-  "openclaw": {
+  "hands": {
     "extensions": [
       "./index.ts"
     ]

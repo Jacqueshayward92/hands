@@ -1,6 +1,6 @@
 import { webhookCallback } from "grammy";
 import { createServer } from "node:http";
-import type { OpenClawConfig } from "../config/config.js";
+import type { HandsConfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { isDiagnosticsEnabled } from "../infra/diagnostic-events.js";
 import { formatErrorMessage } from "../infra/errors.js";
@@ -23,7 +23,7 @@ const TELEGRAM_WEBHOOK_BODY_TIMEOUT_MS = 30_000;
 export async function startTelegramWebhook(opts: {
   token: string;
   accountId?: string;
-  config?: OpenClawConfig;
+  config?: HandsConfig;
   path?: string;
   port?: number;
   host?: string;

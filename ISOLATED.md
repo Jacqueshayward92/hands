@@ -1,17 +1,17 @@
 # Hands Fork — Isolation Guide
 
-This is a development fork. It MUST run completely isolated from the production OpenClaw instance.
+This is a development fork. It MUST run completely isolated from the production Hands instance.
 
 ## Quick Start (Isolated)
 
 ```powershell
 # Set isolation environment BEFORE running anything
-$env:OPENCLAW_STATE_DIR = "C:\Users\jacqu\.openclaw-hands"
-$env:OPENCLAW_PROFILE = "hands"
-$env:OPENCLAW_PORT = "19789"  # Different from production 18789
+$env:HANDS_STATE_DIR = "C:\Users\jacqu\.hands-hands"
+$env:HANDS_PROFILE = "hands"
+$env:HANDS_PORT = "19789"  # Different from production 18789
 
 # Install dependencies
-cd C:\Users\jacqu\.openclaw\workspace\hands
+cd C:\Users\jacqu\.hands\workspace\hands
 npm install
 
 # Build
@@ -28,19 +28,19 @@ node dist/gateway.js
 
 | Resource | Production | Hands Fork |
 |----------|-----------|------------|
-| State dir | `~/.openclaw` | `~/.openclaw-hands` |
-| Workspace | `~/.openclaw/workspace` | `~/.openclaw/workspace-hands` |
+| State dir | `~/.hands` | `~/.hands-hands` |
+| Workspace | `~/.hands/workspace` | `~/.hands/workspace-hands` |
 | Port | 18789 | 19789 |
-| Config | `~/.openclaw/openclaw.json` | `~/.openclaw-hands/openclaw.json` |
-| Sessions | `~/.openclaw/sessions/` | `~/.openclaw-hands/sessions/` |
-| Task ledger | `~/.openclaw/task-ledger/` | `~/.openclaw-hands/task-ledger/` |
-| Tool failures | `~/.openclaw/tool-failures/` | `~/.openclaw-hands/tool-failures/` |
-| Scratch pads | `~/.openclaw/scratch/` | `~/.openclaw-hands/scratch/` |
-| Execution plans | `~/.openclaw/execution-plans/` | `~/.openclaw-hands/execution-plans/` |
+| Config | `~/.hands/hands.json` | `~/.hands-hands/hands.json` |
+| Sessions | `~/.hands/sessions/` | `~/.hands-hands/sessions/` |
+| Task ledger | `~/.hands/task-ledger/` | `~/.hands-hands/task-ledger/` |
+| Tool failures | `~/.hands/tool-failures/` | `~/.hands-hands/tool-failures/` |
+| Scratch pads | `~/.hands/scratch/` | `~/.hands-hands/scratch/` |
+| Execution plans | `~/.hands/execution-plans/` | `~/.hands-hands/execution-plans/` |
 
 ## NEVER
 
-- Run without setting `OPENCLAW_STATE_DIR` first
+- Run without setting `HANDS_STATE_DIR` first
 - Use port 18789 (production)
-- Write to `~/.openclaw/` directly
-- Run `openclaw gateway start` (that's the production service)
+- Write to `~/.hands/` directly
+- Run `hands gateway start` (that's the production service)
