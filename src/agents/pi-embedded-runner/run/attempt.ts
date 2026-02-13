@@ -429,6 +429,25 @@ export async function runEmbeddedAttempt(
     }
 
     // =========================================================================
+    // Execution Plan injection: auto-inject active plan into context
+    // Plans survive compaction — the agent always knows where it is
+    // =========================================================================
+    if (!isHeartbeat) {
+      try {
+        const { readPlanForInjection } = await import("../../tools/execution-plan-tool.js");
+        const planContent = await readPlanForInjection(params.sessionKey ?? "default");
+        if (planContent) {
+          contextFiles.push({
+            path: "EXECUTION_PLAN",
+            content: planContent,
+          });
+        }
+      } catch {
+        // Best-effort
+      }
+    }
+
+    // =========================================================================
     // Tool Failure injection: auto-inject known tool issues into context
     // Agent learns from past tool errors without repeating them.
     // =========================================================================

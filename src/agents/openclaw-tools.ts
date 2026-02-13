@@ -19,6 +19,7 @@ import { createSessionsSendTool } from "./tools/sessions-send-tool.js";
 import { createSessionsSpawnTool } from "./tools/sessions-spawn-tool.js";
 import { createSessionStateTool } from "./tools/session-state-tool.js";
 import { createTaskLedgerTool } from "./tools/task-ledger-tool.js";
+import { createExecutionPlanTool } from "./tools/execution-plan-tool.js";
 import { createTtsTool } from "./tools/tts-tool.js";
 import { createWebFetchTool, createWebSearchTool } from "./tools/web-tools.js";
 
@@ -160,6 +161,9 @@ export function createOpenClawTools(options?: {
     createTaskLedgerTool({
       agentSessionKey: options?.agentSessionKey,
       config: options?.config,
+    }),
+    createExecutionPlanTool({
+      sessionKey: options?.agentSessionKey ?? "default",
     }),
   ];
 
