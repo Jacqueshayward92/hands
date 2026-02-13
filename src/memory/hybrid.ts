@@ -162,5 +162,60 @@ export function mergeHybridResults(params: {
     };
   });
 
-  return merged.toSorted((a, b) => b.score - a.score);
+  const sorted = merged.toSorted((a, b) => b.score - a.score);
+
+  // =========================================================================
+  // Source clustering: boost results that share a source with top results
+  // This creates implicit topic relationships without a knowledge graph.
+  // If the top result is from "People/Jacques.md" and another result is also
+  // from that file, it gets a small boost — they're related context.
+  // =========================================================================
+  if (sorted.length > 2) {
+    const topSources = new Set(sorted.slice(0, 3).map(r => r.path));
+    const CLUSTER_BOOST = 0.05;
+    for (let i = 3; i < sorted.length; i++) {
+      if (topSources.has(sorted[i].path)) {
+        sorted[i] = { ...sorted[i], score: sorted[i].score + CLUSTER_BOOST };
+      }
+    }
+    // Re-sort after boosting
+    sorted.sort((a, b) => b.score - a.score);
+  }
+
+  // =========================================================================
+  // Entity co-occurrence boost: if top results mention the same named entities,
+  // other results mentioning those entities get a small boost.
+  // Extracts capitalized multi-word names and known patterns from snippets.
+  // =========================================================================
+  if (sorted.length > 3) {
+    const topSnippets = sorted.slice(0, 3).map(r => r.snippet).join(" ");
+    // Extract potential entity names (capitalized words, 2+ chars)
+    const entityPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b/g;
+    const entities = new Set<string>();
+    let entityMatch;
+    while ((entityMatch = entityPattern.exec(topSnippets)) !== null) {
+      if (entityMatch[1].length >= 4) entities.add(entityMatch[1].toLowerCase());
+    }
+    // Also extract known entity patterns (e.g., "SP LLC", abbreviations)
+    const abbrPattern = /\b([A-Z]{2,}(?:\s+[A-Z][a-z]*)*)\b/g;
+    while ((entityMatch = abbrPattern.exec(topSnippets)) !== null) {
+      if (entityMatch[1].length >= 2) entities.add(entityMatch[1].toLowerCase());
+    }
+
+    if (entities.size > 0) {
+      const ENTITY_BOOST = 0.03;
+      for (let i = 3; i < sorted.length; i++) {
+        const snippetLower = sorted[i].snippet.toLowerCase();
+        for (const entity of entities) {
+          if (snippetLower.includes(entity)) {
+            sorted[i] = { ...sorted[i], score: sorted[i].score + ENTITY_BOOST };
+            break; // One boost per result
+          }
+        }
+      }
+      sorted.sort((a, b) => b.score - a.score);
+    }
+  }
+
+  return sorted;
 }
