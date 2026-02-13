@@ -418,6 +418,43 @@ export async function runEmbeddedAttempt(
     }
 
     // =========================================================================
+    // Proactive Triggers: detect conditions that need agent attention
+    // Runs on every wake (heartbeat + regular) but with cooldown per trigger
+    // =========================================================================
+    {
+      const triggerAgentId = resolveSessionAgentId({
+        sessionKey: params.sessionKey,
+        config: params.config,
+      });
+      try {
+        const { evaluateProactiveTriggers } = await import("../../proactive-triggers.js");
+        let subagentRuns: Array<{ runId: string; task: string; startedAt?: number; endedAt?: number }> = [];
+        try {
+          const { listSubagentRunsForRequester } = await import("../../subagent-registry.js");
+          subagentRuns = listSubagentRunsForRequester(params.sessionKey).map(r => ({
+            runId: r.runId,
+            task: r.task,
+            startedAt: r.startedAt,
+            endedAt: r.endedAt,
+          }));
+        } catch { /* registry not ready */ }
+        const { injectionText } = await evaluateProactiveTriggers({
+          agentId: triggerAgentId,
+          workspaceDir: effectiveWorkspace,
+          subagentRuns,
+        });
+        if (injectionText) {
+          contextFiles.push({
+            path: "PROACTIVE_ALERTS",
+            content: injectionText,
+          });
+        }
+      } catch {
+        // Best-effort
+      }
+    }
+
+    // =========================================================================
     // Sub-agent status injection: main agent sees parallel work
     // Shows running + recently completed sub-agent tasks
     // =========================================================================
