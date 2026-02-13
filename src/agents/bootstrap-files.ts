@@ -2,6 +2,7 @@ import type { OpenClawConfig } from "../config/config.js";
 import type { EmbeddedContextFile } from "./pi-embedded-helpers.js";
 import { applyBootstrapHookOverrides } from "./bootstrap-hooks.js";
 import { buildBootstrapContextFiles, resolveBootstrapMaxChars } from "./pi-embedded-helpers.js";
+import { applySmartBootstrapTrimming } from "./smart-bootstrap.js";
 import {
   filterBootstrapFilesForSession,
   loadWorkspaceBootstrapFiles,
@@ -24,12 +25,24 @@ export async function resolveBootstrapFilesForRun(params: {
   sessionKey?: string;
   sessionId?: string;
   agentId?: string;
+  /** Whether auto-recall is active (allows MEMORY.md trimming) */
+  autoRecallEnabled?: boolean;
+  /** Whether this is a heartbeat session */
+  isHeartbeat?: boolean;
 }): Promise<WorkspaceBootstrapFile[]> {
   const sessionKey = params.sessionKey ?? params.sessionId;
-  const bootstrapFiles = filterBootstrapFilesForSession(
+  let bootstrapFiles = filterBootstrapFilesForSession(
     await loadWorkspaceBootstrapFiles(params.workspaceDir),
     sessionKey,
   );
+
+  // Smart trimming: reduce large files to headers + key sections
+  // Auto-recall surfaces relevant chunks on demand
+  bootstrapFiles = applySmartBootstrapTrimming(bootstrapFiles, {
+    autoRecallEnabled: params.autoRecallEnabled,
+    isHeartbeat: params.isHeartbeat,
+  });
+
   return applyBootstrapHookOverrides({
     files: bootstrapFiles,
     workspaceDir: params.workspaceDir,
@@ -47,6 +60,8 @@ export async function resolveBootstrapContextForRun(params: {
   sessionId?: string;
   agentId?: string;
   warn?: (message: string) => void;
+  autoRecallEnabled?: boolean;
+  isHeartbeat?: boolean;
 }): Promise<{
   bootstrapFiles: WorkspaceBootstrapFile[];
   contextFiles: EmbeddedContextFile[];

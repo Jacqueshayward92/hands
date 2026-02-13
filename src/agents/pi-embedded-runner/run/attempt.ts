@@ -195,6 +195,14 @@ export async function runEmbeddedAttempt(
     });
 
     const sessionLabel = params.sessionKey ?? params.sessionId;
+
+    // Pre-compute heartbeat + auto-recall flags for smart bootstrap trimming
+    const preIsHeartbeat = (() => {
+      const heartbeatPrompt = resolveHeartbeatPrompt(params.config?.agents?.defaults?.heartbeat?.prompt);
+      return Boolean(heartbeatPrompt && params.prompt?.trim() === heartbeatPrompt.trim());
+    })();
+    const preAutoRecallEnabled = !preIsHeartbeat && params.config?.agents?.defaults?.memorySearch?.autoRecall !== false;
+
     const { bootstrapFiles: hookAdjustedBootstrapFiles, contextFiles } =
       await resolveBootstrapContextForRun({
         workspaceDir: effectiveWorkspace,
@@ -202,6 +210,8 @@ export async function runEmbeddedAttempt(
         sessionKey: params.sessionKey,
         sessionId: params.sessionId,
         warn: makeBootstrapWarn({ sessionLabel, warn: (message) => log.warn(message) }),
+        autoRecallEnabled: preAutoRecallEnabled,
+        isHeartbeat: preIsHeartbeat,
       });
     // =========================================================================
     // Heartbeat detection: skip heavy context for heartbeat messages
