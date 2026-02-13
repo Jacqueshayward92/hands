@@ -1112,12 +1112,28 @@ export async function runEmbeddedAttempt(
             note: `images: prompt=${imageResult.images.length} history=${imageResult.historyImagesByIndex.size}`,
           });
 
+          // Inject resource state so the LLM knows its execution context
+          let promptWithState = effectivePrompt;
+          try {
+            const { buildResourceState } = await import("../../resource-state.js");
+            const resourceNote = buildResourceState({
+              messages: activeSession.messages,
+              compactionCount: getCompactionCount(),
+              sessionStartedAt: promptStartedAt,
+            });
+            // Append as a small system note after the user's message
+            if (resourceNote && getCompactionCount() > 0 || activeSession.messages.length > 40) {
+              // Only inject when context pressure is meaningful
+              promptWithState = effectivePrompt + `\n\n---\n${resourceNote}`;
+            }
+          } catch { /* best-effort */ }
+
           // Only pass images option if there are actually images to pass
           // This avoids potential issues with models that don't expect the images parameter
           if (imageResult.images.length > 0) {
-            await abortable(activeSession.prompt(effectivePrompt, { images: imageResult.images }));
+            await abortable(activeSession.prompt(promptWithState, { images: imageResult.images }));
           } else {
-            await abortable(activeSession.prompt(effectivePrompt));
+            await abortable(activeSession.prompt(promptWithState));
           }
         } catch (err) {
           promptError = err;
