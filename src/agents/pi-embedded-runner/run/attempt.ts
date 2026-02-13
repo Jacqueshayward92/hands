@@ -394,6 +394,29 @@ export async function runEmbeddedAttempt(
       }
     }
 
+    // =========================================================================
+    // Tool Failure injection: auto-inject known tool issues into context
+    // Agent learns from past tool errors without repeating them.
+    // =========================================================================
+    if (!isHeartbeat) {
+      const failureAgentId = resolveSessionAgentId({
+        sessionKey: params.sessionKey,
+        config: params.config,
+      });
+      try {
+        const { readToolFailuresForInjection } = await import("../../../memory/tool-failure-store.js");
+        const failuresContent = await readToolFailuresForInjection(failureAgentId);
+        if (failuresContent) {
+          contextFiles.push({
+            path: "TOOL_FAILURES",
+            content: failuresContent,
+          });
+        }
+      } catch {
+        // Best-effort: no failure store yet or read error — skip silently
+      }
+    }
+
     const workspaceNotes = hookAdjustedBootstrapFiles.some(
       (file) => file.name === DEFAULT_BOOTSTRAP_FILENAME && !file.missing,
     )
@@ -1113,6 +1136,41 @@ export async function runEmbeddedAttempt(
             });
           } catch (err) {
             log.warn(`episode logging failed: ${err instanceof Error ? err.message : String(err)}`);
+          }
+        })();
+
+        // =====================================================================
+        // Tool Failure Learning: record tool errors for future avoidance
+        // Scans messages for tool errors and persists failure patterns
+        // =====================================================================
+        void (async () => {
+          try {
+            const { recordToolFailure } = await import("../../../memory/tool-failure-store.js");
+            for (const msg of messagesSnapshot) {
+              const m = msg as Record<string, unknown>;
+              // Check for toolResult errors
+              if (m?.role === "toolResult" && m?.isError) {
+                const toolName = typeof m.toolName === "string" ? m.toolName : "unknown";
+                const errorText = typeof m.text === "string" ? m.text :
+                  typeof m.output === "string" ? m.output :
+                  typeof m.content === "string" ? m.content : "";
+                if (errorText) {
+                  await recordToolFailure(hookAgentId, toolName, errorText);
+                }
+              }
+              // Also check assistant messages with error content blocks
+              if (m?.role === "assistant" && Array.isArray(m.content)) {
+                for (const block of m.content as Array<Record<string, unknown>>) {
+                  if (block?.type === "tool_result" && block?.is_error) {
+                    const toolName = typeof block.tool_use_id === "string" ? block.tool_use_id : "unknown";
+                    const text = typeof block.content === "string" ? block.content : "";
+                    if (text) await recordToolFailure(hookAgentId, toolName, text);
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            log.warn(`tool failure recording failed: ${err instanceof Error ? err.message : String(err)}`);
           }
         })();
       } finally {
