@@ -1,16 +1,23 @@
 import { getChannelPlugin, normalizeChannelId } from "../channels/plugins/index.js";
 import { normalizeTargetForProvider } from "../infra/outbound/target-normalization.js";
 import { truncateUtf16Safe } from "../utils.js";
+import { compressToolResult } from "./tool-result-compressor.js";
 import { type MessagingToolSend } from "./pi-embedded-messaging.js";
 
 const TOOL_RESULT_MAX_CHARS = 8000;
 const TOOL_ERROR_MAX_CHARS = 400;
 
+/** Current tool name for compression context (set by handleToolExecutionEnd) */
+let _currentToolName = "";
+export function setCurrentToolName(name: string) { _currentToolName = name; }
+
 function truncateToolText(text: string): string {
-  if (text.length <= TOOL_RESULT_MAX_CHARS) {
-    return text;
+  // Apply smart compression first, then truncate as fallback
+  const compressed = compressToolResult(_currentToolName, text);
+  if (compressed.length <= TOOL_RESULT_MAX_CHARS) {
+    return compressed;
   }
-  return `${truncateUtf16Safe(text, TOOL_RESULT_MAX_CHARS)}\n…(truncated)…`;
+  return `${truncateUtf16Safe(compressed, TOOL_RESULT_MAX_CHARS)}\n…(truncated)…`;
 }
 
 function normalizeToolErrorText(text: string): string | undefined {

@@ -8,6 +8,7 @@ import { emitAgentEvent } from "../infra/agent-events.js";
 import { getGlobalHookRunner } from "../plugins/hook-runner-global.js";
 import { normalizeTextForComparison } from "./pi-embedded-helpers.js";
 import { isMessagingTool, isMessagingToolSendAction } from "./pi-embedded-messaging.js";
+import { setCurrentToolName } from "./pi-embedded-subscribe.tools.js";
 import {
   extractToolErrorMessage,
   extractToolResultText,
@@ -183,6 +184,8 @@ export async function handleToolExecutionEnd(
   const isError = Boolean(evt.isError);
   const result = evt.result;
   const isToolError = isError || isToolResultError(result);
+  // Set tool name for compression context before sanitization
+  setCurrentToolName(toolName);
   const sanitizedResult = sanitizeToolResult(result);
   const meta = ctx.state.toolMetaById.get(toolCallId);
   ctx.state.toolMetas.push({ toolName, meta });
