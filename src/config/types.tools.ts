@@ -224,6 +224,12 @@ export type AgentToolsConfig = {
 export type MemorySearchConfig = {
   /** Enable vector memory search (default: true). */
   enabled?: boolean;
+  /**
+   * Auto-recall: pre-inject relevant memories into the LLM context window
+   * BEFORE the model runs. The LLM arrives with memories already present —
+   * no need to call memory_search reactively. (default: true)
+   */
+  autoRecall?: boolean;
   /** Sources to index and search (default: ["memory"]). */
   sources?: Array<"memory" | "sessions">;
   /** Extra paths to include in memory search (directories or .md files). */

@@ -19,9 +19,11 @@ import { resolveUserPath } from "../../../utils.js";
 import { normalizeMessageChannel } from "../../../utils/message-channel.js";
 import { isReasoningTagProvider } from "../../../utils/provider-utils.js";
 import { resolveOpenClawAgentDir } from "../../agent-paths.js";
-import { resolveSessionAgentIds } from "../../agent-scope.js";
+import { resolveSessionAgentId, resolveSessionAgentIds } from "../../agent-scope.js";
 import { createAnthropicPayloadLogger } from "../../anthropic-payload-log.js";
 import { makeBootstrapWarn, resolveBootstrapContextForRun } from "../../bootstrap-files.js";
+import { resolveMemorySearchConfig } from "../../memory-search.js";
+import { getMemorySearchManager } from "../../../memory/index.js";
 import { createCacheTrace } from "../../cache-trace.js";
 import {
   listChannelSupportedActions,
@@ -199,6 +201,63 @@ export async function runEmbeddedAttempt(
         sessionId: params.sessionId,
         warn: makeBootstrapWarn({ sessionLabel, warn: (message) => log.warn(message) }),
       });
+    // =========================================================================
+    // Auto-Recall: Pre-inject relevant memories into context
+    // Instead of the LLM calling memory_search reactively, the platform
+    // retrieves relevant memories BEFORE the LLM sees the message.
+    // The LLM arrives with memories already in its context window.
+    // =========================================================================
+    const autoRecallEnabled = params.config?.agents?.defaults?.memorySearch?.autoRecall !== false;
+    if (autoRecallEnabled && params.prompt) {
+      const recallAgentId = resolveSessionAgentId({
+        sessionKey: params.sessionKey,
+        config: params.config,
+      });
+      const memSearchCfg = resolveMemorySearchConfig(params.config, recallAgentId);
+      if (memSearchCfg) {
+        try {
+          const { manager } = await getMemorySearchManager({
+            cfg: params.config!,
+            agentId: recallAgentId,
+          });
+          if (manager) {
+            const autoRecallMaxResults = 5;
+            const autoRecallMinScore = 0.3;
+            const memories = await manager.search(params.prompt, {
+              maxResults: autoRecallMaxResults,
+              minScore: autoRecallMinScore,
+              sessionKey: params.sessionKey,
+            });
+            if (memories.length > 0) {
+              const snippets = memories
+                .map((m) => `[${m.path}#${m.startLine}] (score: ${m.score.toFixed(2)})\n${m.snippet}`)
+                .join("\n\n---\n\n");
+              const maxChars = 4000;
+              const truncatedSnippets = snippets.length > maxChars
+                ? snippets.slice(0, maxChars) + "\n...(truncated)"
+                : snippets;
+              contextFiles.push({
+                path: "AUTO_RECALLED_MEMORIES",
+                content:
+                  `## Recalled Memories (auto-retrieved, relevance-ranked)\n` +
+                  `The following memories were automatically retrieved based on the incoming message. ` +
+                  `You do NOT need to call memory_search for this context — it is already here.\n\n` +
+                  truncatedSnippets,
+              });
+              log.debug("auto-recall: injected memories", {
+                count: memories.length,
+                topScore: memories[0]?.score,
+                chars: truncatedSnippets.length,
+              });
+            }
+          }
+        } catch (err) {
+          // Auto-recall is best-effort; don't block the run if it fails
+          log.warn(`auto-recall failed: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      }
+    }
+
     const workspaceNotes = hookAdjustedBootstrapFiles.some(
       (file) => file.name === DEFAULT_BOOTSTRAP_FILENAME && !file.missing,
     )
