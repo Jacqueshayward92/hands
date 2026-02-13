@@ -371,6 +371,29 @@ export async function runEmbeddedAttempt(
       }
     }
 
+    // =========================================================================
+    // Task Ledger injection: auto-inject active tasks into context
+    // The agent always knows what it's working on, what's blocked, what's next.
+    // =========================================================================
+    if (!isHeartbeat) {
+      const taskAgentId = resolveSessionAgentId({
+        sessionKey: params.sessionKey,
+        config: params.config,
+      });
+      try {
+        const { readTasksForInjection } = await import("../../../state/task-ledger.js");
+        const tasksContent = await readTasksForInjection(taskAgentId);
+        if (tasksContent) {
+          contextFiles.push({
+            path: "TASK_LEDGER",
+            content: tasksContent,
+          });
+        }
+      } catch {
+        // Best-effort: no ledger file yet or read error — skip silently
+      }
+    }
+
     const workspaceNotes = hookAdjustedBootstrapFiles.some(
       (file) => file.name === DEFAULT_BOOTSTRAP_FILENAME && !file.missing,
     )
