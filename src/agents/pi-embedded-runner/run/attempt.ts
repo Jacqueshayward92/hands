@@ -1140,6 +1140,23 @@ export async function runEmbeddedAttempt(
         })();
 
         // =====================================================================
+        // Procedure Store: extract reusable procedures from successful runs
+        // Fire-and-forget — only logs multi-step (3+ tools) successful runs
+        // =====================================================================
+        void (async () => {
+          try {
+            const { logProcedure } = await import("../../../memory/procedure-store.js");
+            await logProcedure({
+              messages: messagesSnapshot,
+              success: !aborted && !promptError,
+              workspaceDir: effectiveWorkspace,
+            });
+          } catch (err) {
+            log.warn(`procedure logging failed: ${err instanceof Error ? err.message : String(err)}`);
+          }
+        })();
+
+        // =====================================================================
         // Tool Failure Learning: record tool errors for future avoidance
         // Scans messages for tool errors and persists failure patterns
         // =====================================================================
