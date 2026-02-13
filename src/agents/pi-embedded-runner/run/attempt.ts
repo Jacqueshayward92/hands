@@ -288,6 +288,28 @@ export async function runEmbeddedAttempt(
       }
     }
 
+    // =========================================================================
+    // Session State injection: auto-inject persisted key-value state
+    // =========================================================================
+    {
+      const stateAgentId = resolveSessionAgentId({
+        sessionKey: params.sessionKey,
+        config: params.config,
+      });
+      try {
+        const { readStateForInjection } = await import("../../../state/session-state-store.js");
+        const stateContent = await readStateForInjection(stateAgentId);
+        if (stateContent) {
+          contextFiles.push({
+            path: "SESSION_STATE",
+            content: stateContent,
+          });
+        }
+      } catch {
+        // Best-effort: no state file yet or read error — skip silently
+      }
+    }
+
     const workspaceNotes = hookAdjustedBootstrapFiles.some(
       (file) => file.name === DEFAULT_BOOTSTRAP_FILENAME && !file.missing,
     )

@@ -433,6 +433,11 @@ export type ToolsConfig = {
       enabled?: boolean;
     };
   };
+  /** Session state key-value store configuration. */
+  sessionState?: {
+    /** Enable or disable the session state tool (default: true). */
+    enabled?: boolean;
+  };
   agentToAgent?: {
     /** Enable agent-to-agent messaging tools. Default: false. */
     enabled?: boolean;
