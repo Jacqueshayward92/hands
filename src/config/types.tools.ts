@@ -230,6 +230,17 @@ export type MemorySearchConfig = {
    * no need to call memory_search reactively. (default: true)
    */
   autoRecall?: boolean;
+  /** Correction memory: detect, store, and auto-recall user corrections. */
+  corrections?: {
+    /** Enable correction detection and memory (default: true). */
+    enabled?: boolean;
+    /** Minimum confidence to store a correction (0-1, default: 0.5). */
+    minConfidence?: number;
+    /** Max stored corrections per agent (default: 500). */
+    maxEntries?: number;
+    /** Score boost multiplier for corrections in auto-recall (default: 1.5). */
+    scoreBoost?: number;
+  };
   /** Sources to index and search (default: ["memory"]). */
   sources?: Array<"memory" | "sessions">;
   /** Extra paths to include in memory search (directories or .md files). */

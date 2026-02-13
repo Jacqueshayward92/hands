@@ -216,6 +216,10 @@ const FIELD_LABELS: Record<string, string> = {
   "agents.defaults.memorySearch": "Memory Search",
   "agents.defaults.memorySearch.enabled": "Enable Memory Search",
   "agents.defaults.memorySearch.autoRecall": "Auto-inject relevant memories into context before LLM runs (default: true)",
+  "agents.defaults.memorySearch.corrections.enabled": "Enable Correction Memory (detect and learn from user corrections)",
+  "agents.defaults.memorySearch.corrections.minConfidence": "Min Correction Detection Confidence (0-1, default: 0.5)",
+  "agents.defaults.memorySearch.corrections.maxEntries": "Max Stored Corrections Per Agent (default: 500)",
+  "agents.defaults.memorySearch.corrections.scoreBoost": "Correction Score Boost Multiplier (default: 1.5)",
   "agents.defaults.memorySearch.sources": "Memory Search Sources",
   "agents.defaults.memorySearch.extraPaths": "Extra Memory Paths",
   "agents.defaults.memorySearch.experimental.sessionMemory":
