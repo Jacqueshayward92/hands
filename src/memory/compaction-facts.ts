@@ -189,6 +189,91 @@ function extractUrls(
  * Extract structured facts from conversation messages.
  * Uses heuristic pattern matching — no LLM calls.
  */
+/**
+ * Extract a "task anchor" from the most recent messages.
+ * This captures WHAT the agent is currently working on, so that if compaction
+ * fires mid-task, the agent can recover its working context.
+ *
+ * Looks at the last N messages for:
+ * - The most recent user request
+ * - What tools were just called and their key results
+ * - Any stated plan/next steps from the assistant
+ */
+function extractTaskAnchor(messages: AgentMessage[]): ExtractedFact[] {
+  const anchors: ExtractedFact[] = [];
+  // Look at the last 10 messages (the "active work" zone)
+  const recentStart = Math.max(0, messages.length - 10);
+  const recent = messages.slice(recentStart);
+
+  // Find the last user request
+  for (let i = recent.length - 1; i >= 0; i--) {
+    const m = recent[i] as Record<string, unknown>;
+    if (m?.role === "user") {
+      const text = getMessageText(recent[i]);
+      if (text && text.length > 10) {
+        anchors.push({
+          category: "task",
+          content: `[ACTIVE REQUEST] ${text.slice(0, 300)}`,
+          source: "user",
+          position: 0.95,
+        });
+        break;
+      }
+    }
+  }
+
+  // Find the last assistant plan/progress
+  for (let i = recent.length - 1; i >= 0; i--) {
+    const m = recent[i] as Record<string, unknown>;
+    if (m?.role === "assistant") {
+      const text = getMessageText(recent[i]);
+      if (text && text.length > 20) {
+        // Extract stated next steps or current progress
+        const nextStepMatch = text.match(/(?:next[,:]?\s|now\s(?:I'll|let me|I need to)|step\s\d|then\s(?:I'll|we))\s*(.{10,300})/i);
+        if (nextStepMatch) {
+          anchors.push({
+            category: "task",
+            content: `[ACTIVE PROGRESS] ${nextStepMatch[0].slice(0, 300)}`,
+            source: "assistant",
+            position: 0.98,
+          });
+        }
+        // Also capture the last 200 chars as general context
+        anchors.push({
+          category: "task",
+          content: `[ACTIVE CONTEXT] ${text.slice(-300)}`,
+          source: "assistant",
+          position: 0.99,
+        });
+        break;
+      }
+    }
+  }
+
+  // Capture recent tool names for continuity
+  const recentTools: string[] = [];
+  for (const msg of recent) {
+    const m = msg as Record<string, unknown>;
+    if (m?.role === "assistant" && Array.isArray(m.content)) {
+      for (const block of m.content as Array<Record<string, unknown>>) {
+        if (block?.type === "tool_use" && typeof block.name === "string") {
+          recentTools.push(block.name);
+        }
+      }
+    }
+  }
+  if (recentTools.length > 0) {
+    anchors.push({
+      category: "task",
+      content: `[ACTIVE TOOLS] Recent tool chain: ${[...new Set(recentTools)].join(", ")}`,
+      source: "assistant",
+      position: 0.97,
+    });
+  }
+
+  return anchors;
+}
+
 export function extractFacts(messages: AgentMessage[]): ExtractedFact[] {
   const allFacts: ExtractedFact[] = [];
   const totalMessages = messages.length || 1;
@@ -220,6 +305,9 @@ export function extractFacts(messages: AgentMessage[]): ExtractedFact[] {
       allFacts.push(...extractWithPatterns(text, ERROR_PATTERNS, "error_pattern", source, position));
     }
   }
+
+  // Extract task anchor from the most recent messages (survives compaction)
+  allFacts.push(...extractTaskAnchor(messages));
 
   // Deduplicate across all messages (same content, same category)
   const deduped = new Map<string, ExtractedFact>();
