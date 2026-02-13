@@ -24,6 +24,21 @@ import {
 } from "./memory-flush.js";
 import { incrementCompactionCount } from "./session-updates.js";
 
+/**
+ * Runs the pre-compaction memory flush if the session is near the context window limit.
+ *
+ * **Memory re-indexing after flush:**
+ * When the LLM writes new memories (e.g. `memory/YYYY-MM-DD.md`) during the flush,
+ * the MemoryIndexManager's chokidar file watcher automatically detects the changes
+ * and triggers a debounced re-index (default ~1500ms via `sync.watchDebounceMs`).
+ *
+ * Additionally, the next session's first search will trigger a sync if the index is
+ * still dirty (`sync.onSearch: true`), and `warmSession()` syncs on session start
+ * (`sync.onSessionStart: true`). All three defaults are `true`.
+ *
+ * Pipeline: flush writes files → chokidar detects → marks dirty → scheduleWatchSync()
+ * → debounced sync() → files re-indexed. No explicit re-index call needed here.
+ */
 export async function runMemoryFlushIfNeeded(params: {
   cfg: OpenClawConfig;
   followupRun: FollowupRun;
