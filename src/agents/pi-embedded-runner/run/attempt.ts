@@ -202,12 +202,34 @@ export async function runEmbeddedAttempt(
         warn: makeBootstrapWarn({ sessionLabel, warn: (message) => log.warn(message) }),
       });
     // =========================================================================
+    // Heartbeat detection: skip heavy context for heartbeat messages
+    // =========================================================================
+    const isHeartbeat = (() => {
+      const heartbeatPrompt = resolveHeartbeatPrompt(params.config?.agents?.defaults?.heartbeat?.prompt);
+      return heartbeatPrompt && params.prompt?.trim() === heartbeatPrompt.trim();
+    })();
+
+    if (isHeartbeat) {
+      const heartbeatAllowlist = new Set(['AGENTS.md', 'HEARTBEAT.md']);
+      const before = contextFiles.length;
+      contextFiles.splice(
+        0,
+        contextFiles.length,
+        ...contextFiles.filter(f => {
+          const baseName = f.path.split(/[\\/]/).pop() ?? f.path;
+          return heartbeatAllowlist.has(baseName);
+        }),
+      );
+      log.debug(`heartbeat: filtered contextFiles ${before} -> ${contextFiles.length}`);
+    }
+
+    // =========================================================================
     // Auto-Recall: Pre-inject relevant memories into context
     // Instead of the LLM calling memory_search reactively, the platform
     // retrieves relevant memories BEFORE the LLM sees the message.
     // The LLM arrives with memories already in its context window.
     // =========================================================================
-    const autoRecallEnabled = params.config?.agents?.defaults?.memorySearch?.autoRecall !== false;
+    const autoRecallEnabled = !isHeartbeat && params.config?.agents?.defaults?.memorySearch?.autoRecall !== false;
     if (autoRecallEnabled && params.prompt) {
       const recallAgentId = resolveSessionAgentId({
         sessionKey: params.sessionKey,
