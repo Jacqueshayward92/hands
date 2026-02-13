@@ -417,6 +417,27 @@ export async function runEmbeddedAttempt(
       }
     }
 
+    // =========================================================================
+    // Sub-agent status injection: main agent sees parallel work
+    // Shows running + recently completed sub-agent tasks
+    // =========================================================================
+    if (!isHeartbeat) {
+      try {
+        const { listSubagentRunsForRequester } = await import("../../subagent-registry.js");
+        const { buildSubagentStatusContext } = await import("../../subagent-context.js");
+        const runs = listSubagentRunsForRequester(params.sessionKey);
+        const statusContent = buildSubagentStatusContext(runs);
+        if (statusContent) {
+          contextFiles.push({
+            path: "SUBAGENT_STATUS",
+            content: statusContent,
+          });
+        }
+      } catch {
+        // Best-effort: registry not initialized or no runs — skip silently
+      }
+    }
+
     const workspaceNotes = hookAdjustedBootstrapFiles.some(
       (file) => file.name === DEFAULT_BOOTSTRAP_FILENAME && !file.missing,
     )
