@@ -144,6 +144,7 @@ export function createTaskLedgerTool(opts?: {
               tags,
             });
             return {
+              details: {},
               content: [{ type: "text", text: `Task created:\n${formatTask(task)}` }],
             };
           }
@@ -177,9 +178,10 @@ export function createTaskLedgerTool(opts?: {
 
             const task = await updateTask(agentId, id, updates);
             if (!task) {
-              return { content: [{ type: "text", text: `Task "${id}" not found.` }] };
+              return { details: {}, content: [{ type: "text", text: `Task "${id}" not found.` }] };
             }
             return {
+              details: {},
               content: [{ type: "text", text: `Task updated:\n${formatTask(task)}` }],
             };
           }
@@ -188,9 +190,10 @@ export function createTaskLedgerTool(opts?: {
             const id = readStringParam(params, "id", { required: true });
             const task = await updateTask(agentId, id, { status: "done" });
             if (!task) {
-              return { content: [{ type: "text", text: `Task "${id}" not found.` }] };
+              return { details: {}, content: [{ type: "text", text: `Task "${id}" not found.` }] };
             }
             return {
+              details: {},
               content: [{ type: "text", text: `Task completed:\n${formatTask(task)}` }],
             };
           }
@@ -208,6 +211,7 @@ export function createTaskLedgerTool(opts?: {
             const tasks = await listTasks(agentId, filter);
             if (tasks.length === 0) {
               return {
+                details: {},
                 content: [
                   {
                     type: "text",
@@ -225,6 +229,7 @@ export function createTaskLedgerTool(opts?: {
               )
               .join("\n");
             return {
+              details: {},
               content: [{ type: "text", text: `Tasks (${tasks.length}):\n${summary}` }],
             };
           }
@@ -233,15 +238,16 @@ export function createTaskLedgerTool(opts?: {
             const id = readStringParam(params, "id", { required: true });
             const task = await getTask(agentId, id);
             if (!task) {
-              return { content: [{ type: "text", text: `Task "${id}" not found.` }] };
+              return { details: {}, content: [{ type: "text", text: `Task "${id}" not found.` }] };
             }
-            return { content: [{ type: "text", text: formatTask(task) }] };
+            return { details: {}, content: [{ type: "text", text: formatTask(task) }] };
           }
 
           case "delete": {
             const id = readStringParam(params, "id", { required: true });
             const deleted = await deleteTask(agentId, id);
             return {
+              details: {},
               content: [
                 {
                   type: "text",
@@ -253,6 +259,7 @@ export function createTaskLedgerTool(opts?: {
 
           default:
             return {
+              details: {},
               content: [
                 {
                   type: "text",
@@ -263,6 +270,7 @@ export function createTaskLedgerTool(opts?: {
         }
       } catch (err) {
         return {
+          details: {},
           content: [
             {
               type: "text",

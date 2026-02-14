@@ -105,14 +105,14 @@ function extractSteps(messages: AgentMessage[]): ProcedureStep[] {
   const pendingTools = new Map<string, { name: string; params: Record<string, unknown> }>();
 
   for (const msg of messages) {
-    const m = msg as Record<string, unknown>;
+    const m = msg as unknown as Record<string, unknown>;
 
     // Check for tool_use blocks in assistant messages
     if (m?.role === "assistant" && Array.isArray(m.content)) {
       for (const block of m.content as Array<Record<string, unknown>>) {
         if (block?.type === "tool_use" && typeof block.name === "string") {
           const toolId = typeof block.id === "string" ? block.id : `tool-${order}`;
-          const input = (block.input && typeof block.input === "object" ? block.input : {}) as Record<string, unknown>;
+          const input = (block.input && typeof block.input === "object" ? block.input : {}) as unknown as Record<string, unknown>;
           pendingTools.set(toolId, { name: block.name, params: input });
         }
       }
@@ -165,7 +165,7 @@ function extractSteps(messages: AgentMessage[]): ProcedureStep[] {
 /** Extract the user's request from messages */
 function extractRequest(messages: AgentMessage[]): string {
   for (let i = messages.length - 1; i >= 0; i--) {
-    const m = messages[i] as Record<string, unknown>;
+    const m = messages[i] as unknown as Record<string, unknown>;
     if (m?.role === "user") {
       const content = m.content;
       if (typeof content === "string") return content.slice(0, 500);

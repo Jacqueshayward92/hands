@@ -130,12 +130,23 @@ export function createExecutionPlanTool(params: {
 }): AnyAgentTool {
   return {
     name: "execution_plan",
+    label: "Execution Plan",
     description:
       "Declare and track multi-step execution plans. Plans survive compaction so you never lose your place. " +
       "Use 'create' to declare a plan with ordered steps. Use 'update' to mark steps as done. " +
       "Use 'get' to check current plan status. Use 'clear' when the plan is complete.",
-    schema: ExecutionPlanToolSchema,
-    async call(args: Record<string, unknown>) {
+    parameters: {
+      type: "object",
+      properties: {
+        action: { type: "string", description: "create, update, get, or clear" },
+        goal: { type: "string", description: "Plan goal (for create)" },
+        steps: { type: "array", items: { type: "string" }, description: "Step descriptions (for create)" },
+        stepId: { type: "number", description: "Step ID to update (for update)" },
+        status: { type: "string", description: "New step status (for update): done, skipped, in_progress" },
+      },
+      required: ["action"],
+    },
+    execute: async (_toolCallId: string, args: any) => {
       const action = String(args.action || "get");
 
       switch (action) {
@@ -148,7 +159,7 @@ export function createExecutionPlanTool(params: {
           const plan: ExecutionPlan = {
             version: 1,
             goal,
-            steps: stepDescs.map((desc, i) => ({
+            steps: stepDescs.map((desc: string, i: number) => ({
               id: i + 1,
               description: desc,
               status: "pending",

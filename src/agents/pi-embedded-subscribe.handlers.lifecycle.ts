@@ -41,7 +41,7 @@ export function handleAutoCompactionStart(ctx: EmbeddedPiSubscribeContext) {
   if (messages && messages.length > 0) {
     void (async () => {
       try {
-        const { extractAndPersistCompactionFacts } = await import("../../memory/compaction-facts.js");
+        const { extractAndPersistCompactionFacts } = await import("../memory/compaction-facts.js");
         await extractAndPersistCompactionFacts({
           messages,
           workspaceDir: process.cwd(),
@@ -56,9 +56,9 @@ export function handleAutoCompactionStart(ctx: EmbeddedPiSubscribeContext) {
     // Auto-recall surfaces them when the agent needs past tool results.
     void (async () => {
       try {
-        const { captureToScratch } = await import("../../memory/scratch-pad.js");
+        const { captureToScratch } = await import("../memory/scratch-pad.js");
         for (const msg of messages) {
-          const m = msg as Record<string, unknown>;
+          const m = msg as unknown as Record<string, unknown>;
           // Capture tool results (not errors — failure store handles those)
           if (m?.role === "toolResult" && !m?.isError) {
             const toolName = typeof m.toolName === "string" ? m.toolName : "";

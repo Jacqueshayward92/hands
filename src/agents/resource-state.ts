@@ -54,7 +54,7 @@ function estimateContextPressure(messageCount: number, compactionCount: number):
 function countToolCalls(messages: AgentMessage[]): number {
   let count = 0;
   for (const msg of messages) {
-    const m = msg as Record<string, unknown>;
+    const m = msg as unknown as Record<string, unknown>;
     if (m?.role === "assistant" && Array.isArray(m.content)) {
       for (const block of m.content as Array<Record<string, unknown>>) {
         if (block?.type === "tool_use") count++;

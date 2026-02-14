@@ -55,7 +55,7 @@ export type Episode = {
 function extractRequest(messages: AgentMessage[]): string {
   // Find the last user message (the one that triggered this run)
   for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i] as Record<string, unknown>;
+    const msg = messages[i] as unknown as Record<string, unknown>;
     if (msg?.role === "user") {
       const content = msg.content;
       if (typeof content === "string") return content.slice(0, 500);
@@ -77,7 +77,7 @@ function extractRequest(messages: AgentMessage[]): string {
 function extractToolsUsed(messages: AgentMessage[]): string[] {
   const tools = new Set<string>();
   for (const msg of messages) {
-    const m = msg as Record<string, unknown>;
+    const m = msg as unknown as Record<string, unknown>;
     // toolUse messages have a name field
     if (m?.role === "toolUse" && typeof m.name === "string") {
       tools.add(m.name);
@@ -103,12 +103,12 @@ function extractFilesAccessed(messages: AgentMessage[]): string[] {
   ];
 
   for (const msg of messages) {
-    const m = msg as Record<string, unknown>;
+    const m = msg as unknown as Record<string, unknown>;
     // Check toolUse params
     if (m?.role === "toolUse") {
       const params = m.params ?? m.input;
       if (params && typeof params === "object") {
-        const p = params as Record<string, unknown>;
+        const p = params as unknown as Record<string, unknown>;
         for (const key of ["file_path", "path", "filePath"]) {
           if (typeof p[key] === "string") {
             files.add(p[key] as string);
@@ -120,7 +120,7 @@ function extractFilesAccessed(messages: AgentMessage[]): string[] {
     if (m?.role === "assistant" && Array.isArray(m.content)) {
       for (const block of m.content as Array<Record<string, unknown>>) {
         if (block?.type === "tool_use" && block.input && typeof block.input === "object") {
-          const input = block.input as Record<string, unknown>;
+          const input = block.input as unknown as Record<string, unknown>;
           for (const key of ["file_path", "path", "filePath"]) {
             if (typeof input[key] === "string") {
               files.add(input[key] as string);
@@ -153,7 +153,7 @@ function extractOutcomes(messages: AgentMessage[]): string[] {
   // Get the last assistant message(s)
   const assistantMsgs: string[] = [];
   for (let i = messages.length - 1; i >= 0 && assistantMsgs.length < 3; i--) {
-    const m = messages[i] as Record<string, unknown>;
+    const m = messages[i] as unknown as Record<string, unknown>;
     if (m?.role === "assistant") {
       const text = typeof m.content === "string" ? m.content : "";
       if (text) assistantMsgs.push(text);

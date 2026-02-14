@@ -43,9 +43,10 @@ export function createSessionStateTool(opts?: {
           const key = readStringParam(params, "key", { required: true });
           const value = await getState(agentId, key);
           if (value === undefined) {
-            return { content: [{ type: "text", text: `Key "${key}" not found.` }] };
+            return { details: {}, content: [{ type: "text", text: `Key "${key}" not found.` }] };
           }
           return {
+            details: {},
             content: [
               { type: "text", text: typeof value === "string" ? value : JSON.stringify(value) },
             ],
@@ -55,12 +56,13 @@ export function createSessionStateTool(opts?: {
           const key = readStringParam(params, "key", { required: true });
           const value = readStringParam(params, "value", { required: true });
           await setState(agentId, key, value);
-          return { content: [{ type: "text", text: `Set "${key}" successfully.` }] };
+          return { details: {}, content: [{ type: "text", text: `Set "${key}" successfully.` }] };
         }
         case "delete": {
           const key = readStringParam(params, "key", { required: true });
           const deleted = await deleteState(agentId, key);
           return {
+            details: {},
             content: [
               {
                 type: "text",
@@ -73,15 +75,16 @@ export function createSessionStateTool(opts?: {
           const data = await listState(agentId);
           const entries = Object.entries(data);
           if (entries.length === 0) {
-            return { content: [{ type: "text", text: "No session state stored." }] };
+            return { details: {}, content: [{ type: "text", text: "No session state stored." }] };
           }
           const lines = entries.map(
             ([k, v]) => `${k}: ${typeof v === "string" ? v : JSON.stringify(v)}`,
           );
-          return { content: [{ type: "text", text: lines.join("\n") }] };
+          return { details: {}, content: [{ type: "text", text: lines.join("\n") }] };
         }
         default:
           return {
+            details: {},
             content: [{ type: "text", text: `Unknown action "${action}". Use get, set, delete, or list.` }],
           };
       }

@@ -98,7 +98,7 @@ const ERROR_PATTERNS = [
 
 function getMessageText(msg: AgentMessage): string {
   if (!msg || typeof msg !== "object") return "";
-  const m = msg as Record<string, unknown>;
+  const m = msg as unknown as Record<string, unknown>;
 
   // String content
   if (typeof m.content === "string") return m.content;
@@ -121,7 +121,7 @@ function getMessageText(msg: AgentMessage): string {
 }
 
 function getMessageRole(msg: AgentMessage): "user" | "assistant" | "tool" {
-  const m = msg as Record<string, unknown>;
+  const m = msg as unknown as Record<string, unknown>;
   if (m.role === "user") return "user";
   if (m.role === "assistant") return "assistant";
   return "tool"; // toolResult, toolUse, etc.
@@ -207,7 +207,7 @@ function extractTaskAnchor(messages: AgentMessage[]): ExtractedFact[] {
 
   // Find the last user request
   for (let i = recent.length - 1; i >= 0; i--) {
-    const m = recent[i] as Record<string, unknown>;
+    const m = recent[i] as unknown as Record<string, unknown>;
     if (m?.role === "user") {
       const text = getMessageText(recent[i]);
       if (text && text.length > 10) {
@@ -224,7 +224,7 @@ function extractTaskAnchor(messages: AgentMessage[]): ExtractedFact[] {
 
   // Find the last assistant plan/progress
   for (let i = recent.length - 1; i >= 0; i--) {
-    const m = recent[i] as Record<string, unknown>;
+    const m = recent[i] as unknown as Record<string, unknown>;
     if (m?.role === "assistant") {
       const text = getMessageText(recent[i]);
       if (text && text.length > 20) {
@@ -253,7 +253,7 @@ function extractTaskAnchor(messages: AgentMessage[]): ExtractedFact[] {
   // Capture recent tool names for continuity
   const recentTools: string[] = [];
   for (const msg of recent) {
-    const m = msg as Record<string, unknown>;
+    const m = msg as unknown as Record<string, unknown>;
     if (m?.role === "assistant" && Array.isArray(m.content)) {
       for (const block of m.content as Array<Record<string, unknown>>) {
         if (block?.type === "tool_use" && typeof block.name === "string") {

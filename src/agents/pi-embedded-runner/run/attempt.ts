@@ -280,7 +280,7 @@ export async function runEmbeddedAttempt(
           sessionKey: params.sessionKey,
           config: params.config,
         });
-        const memSearchCfg = resolveMemorySearchConfig(params.config, recallAgentId);
+        const memSearchCfg = params.config ? resolveMemorySearchConfig(params.config, recallAgentId) : undefined;
         if (memSearchCfg) {
           try {
             const { manager } = await getMemorySearchManager({
@@ -484,7 +484,7 @@ export async function runEmbeddedAttempt(
         let subagentRuns: Array<{ runId: string; task: string; startedAt?: number; endedAt?: number }> = [];
         try {
           const { listSubagentRunsForRequester } = await import("../../subagent-registry.js");
-          subagentRuns = listSubagentRunsForRequester(params.sessionKey).map(r => ({
+          subagentRuns = listSubagentRunsForRequester(params.sessionKey ?? "").map(r => ({
             runId: r.runId,
             task: r.task,
             startedAt: r.startedAt,
@@ -515,7 +515,7 @@ export async function runEmbeddedAttempt(
       try {
         const { listSubagentRunsForRequester } = await import("../../subagent-registry.js");
         const { buildSubagentStatusContext } = await import("../../subagent-context.js");
-        const runs = listSubagentRunsForRequester(params.sessionKey);
+        const runs = listSubagentRunsForRequester(params.sessionKey ?? "");
         const statusContent = buildSubagentStatusContext(runs);
         if (statusContent) {
           contextFiles.push({
@@ -1291,7 +1291,7 @@ export async function runEmbeddedAttempt(
           try {
             const { recordToolFailure } = await import("../../../memory/tool-failure-store.js");
             for (const msg of messagesSnapshot) {
-              const m = msg as Record<string, unknown>;
+              const m = msg as unknown as Record<string, unknown>;
               // Check for toolResult errors
               if (m?.role === "toolResult" && m?.isError) {
                 const toolName = typeof m.toolName === "string" ? m.toolName : "unknown";
